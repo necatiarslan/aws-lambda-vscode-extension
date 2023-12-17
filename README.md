@@ -1,4 +1,4 @@
-# Aws S3 
+# Aws Lambda 
 
 ![screenshoot](media/psc-main-screen.png)
 
@@ -52,7 +52,7 @@ https://www.youtube.com/watch?v=SON8sY1iOBU
 
 ## Bug Report
 To report your bugs or request new features, use link below\
-https://github.com/necatiarslan/aws-s3/issues/new
+https://github.com/necatiarslan/aws-lambda/issues/new
 
 
 ## Todo
@@ -82,6 +82,6 @@ necatia@gmail.com
 
 Other Extensions
 - https://bit.ly/aws-access-vscode-extension
-- https://bit.ly/vscode-aws-s3
+- https://bit.ly/vscode-aws-lambda
 - https://bit.ly/aws-cloudwatch-vscode-extension
 - https://bit.ly/airflow-vscode-extension

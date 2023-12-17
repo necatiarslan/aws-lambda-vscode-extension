@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from 'vscode';
 
-export class S3TreeItem extends vscode.TreeItem {
+export class LambdaTreeItem extends vscode.TreeItem {
 	public IsFav: boolean = false;
 	public TreeItemType:TreeItemType;
 	public Text:string;
 	public Bucket:string | undefined;
 	public Shortcut:string | undefined;
-	public Parent:S3TreeItem | undefined;
-	public Children:S3TreeItem[] = [];
+	public Parent:LambdaTreeItem | undefined;
+	public Children:LambdaTreeItem[] = [];
 	public IsHidden: boolean = false;
 
 	constructor(text:string, treeItemType:TreeItemType) {
@@ -41,7 +41,7 @@ export class S3TreeItem extends vscode.TreeItem {
 		return this.IsAnyChidrenFavInternal(this);
 	}
 
-	public IsAnyChidrenFavInternal(node:S3TreeItem): boolean{
+	public IsAnyChidrenFavInternal(node:LambdaTreeItem): boolean{
 		for(var n of node.Children)
 		{
 			if(n.IsFav)
@@ -71,7 +71,7 @@ export class S3TreeItem extends vscode.TreeItem {
 		return false;
 	}
 
-	public IsFilterStringMatchAnyChildren(node:S3TreeItem, FilterString:string): boolean{
+	public IsFilterStringMatchAnyChildren(node:LambdaTreeItem, FilterString:string): boolean{
 		for(var n of node.Children)
 		{
 			if(n.Text.includes(FilterString))

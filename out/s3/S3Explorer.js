@@ -5,11 +5,10 @@ exports.S3Explorer = void 0;
 const vscode = require("vscode");
 const ui = require("../common/UI");
 const api = require("../common/API");
-const S3TreeView_1 = require("./S3TreeView");
-const S3TreeItem_1 = require("./S3TreeItem");
+const LambdaTreeView_1 = require("./LambdaTreeView");
+const LambdaTreeItem_1 = require("./LambdaTreeItem");
 const S3ExplorerItem_1 = require("./S3ExplorerItem");
 const s3_helper = require("./S3Helper");
-const S3Search_1 = require("./S3Search");
 class S3Explorer {
     constructor(panel, extensionUri, node) {
         this._disposables = [];
@@ -25,10 +24,10 @@ class S3Explorer {
         ui.logToOutput('S3Explorer.constructor Completed');
     }
     SetS3ExplorerItem(node) {
-        if (node.TreeItemType === S3TreeItem_1.TreeItemType.Bucket && node.Bucket) {
+        if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.Bucket && node.Bucket) {
             this.S3ExplorerItem = new S3ExplorerItem_1.S3ExplorerItem(node.Bucket, "");
         }
-        else if (node.TreeItemType === S3TreeItem_1.TreeItemType.Shortcut && node.Bucket && node.Shortcut) {
+        else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.Shortcut && node.Bucket && node.Shortcut) {
             this.S3ExplorerItem = new S3ExplorerItem_1.S3ExplorerItem(node.Bucket, node.Shortcut);
         }
         else {
@@ -42,7 +41,7 @@ class S3Explorer {
     }
     async Load() {
         ui.logToOutput('S3Explorer.LoadLogs Started');
-        if (!S3TreeView_1.S3TreeView.Current) {
+        if (!LambdaTreeView_1.LambdaTreeView.Current) {
             return;
         }
         var result = await api.GetS3ObjectList(this.S3ExplorerItem.Bucket, this.S3ExplorerItem.Key);
@@ -136,7 +135,7 @@ class S3Explorer {
             </td>
             <td style="width:20px">
                 <vscode-button appearance="icon" id="add_shortcut_${this.S3ExplorerItem.Key}">
-                    <span><img src="${S3TreeView_1.S3TreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, this.S3ExplorerItem.Key) ? bookmark_yesUri : bookmark_noUri}"></img></span>
+                    <span><img src="${LambdaTreeView_1.LambdaTreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, this.S3ExplorerItem.Key) ? bookmark_yesUri : bookmark_noUri}"></img></span>
                 </vscode-button>
             </td>
             <td colspan="4">
@@ -163,7 +162,7 @@ class S3Explorer {
                         </td>
                         <td style="width:20px">
                             <vscode-button appearance="icon" id="add_shortcut_${folder.Prefix}">
-                                <span><img src="${S3TreeView_1.S3TreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, folder.Prefix) ? bookmark_yesUri : bookmark_noUri}"></img></span>
+                                <span><img src="${LambdaTreeView_1.LambdaTreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, folder.Prefix) ? bookmark_yesUri : bookmark_noUri}"></img></span>
                             </vscode-button>
                         </td>
                         <td>
@@ -195,7 +194,7 @@ class S3Explorer {
                         </td>
                         <td style="width:20px">
                             <vscode-button appearance="icon" id="add_shortcut_${file.Key}">
-                                <span><img src="${S3TreeView_1.S3TreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, file.Key) ? bookmark_yesUri : bookmark_noUri}"></img></span>
+                                <span><img src="${LambdaTreeView_1.LambdaTreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, file.Key) ? bookmark_yesUri : bookmark_noUri}"></img></span>
                             </vscode-button>
                         </td>
                         <td>
@@ -381,7 +380,7 @@ class S3Explorer {
         <table>
             <tr>
                 <td>
-                    <vscode-link href="https://github.com/necatiarslan/aws-s3/issues/new">Bug Report & Feature Request</vscode-link>
+                    <vscode-link href="https://github.com/necatiarslan/aws-lambda/issues/new">Bug Report & Feature Request</vscode-link>
                 </td>
             </tr>
         </table>
@@ -412,15 +411,14 @@ class S3Explorer {
                 case "search":
                     let node;
                     if (this.S3ExplorerItem.IsRoot()) {
-                        node = new S3TreeItem_1.S3TreeItem("", S3TreeItem_1.TreeItemType.Bucket);
+                        node = new LambdaTreeItem_1.LambdaTreeItem("", LambdaTreeItem_1.TreeItemType.Bucket);
                         node.Bucket = this.S3ExplorerItem.Bucket;
                     }
                     else {
-                        node = new S3TreeItem_1.S3TreeItem("", S3TreeItem_1.TreeItemType.Shortcut);
+                        node = new LambdaTreeItem_1.LambdaTreeItem("", LambdaTreeItem_1.TreeItemType.Shortcut);
                         node.Bucket = this.S3ExplorerItem.Bucket;
                         node.Shortcut = this.S3ExplorerItem.Key;
                     }
-                    S3Search_1.S3Search.Render(this.extensionUri, node);
                     return;
                 case "create_folder":
                     this.CreateFolder();
@@ -537,7 +535,7 @@ class S3Explorer {
         }, undefined, this._disposables);
     }
     AddShortcut(key) {
-        S3TreeView_1.S3TreeView.Current?.AddOrRemoveShortcut(this.S3ExplorerItem.Bucket, key);
+        LambdaTreeView_1.LambdaTreeView.Current?.AddOrRemoveShortcut(this.S3ExplorerItem.Bucket, key);
         this.RenderHtml();
     }
     CopyS3URI(keys) {
@@ -645,7 +643,7 @@ class S3Explorer {
         }
         let result = await api.MoveFile(this.S3ExplorerItem.Bucket, key, targetPath);
         if (result.isSuccessful) {
-            S3TreeView_1.S3TreeView.Current?.UpdateShortcutByKey(this.S3ExplorerItem.Bucket, key, result.result);
+            LambdaTreeView_1.LambdaTreeView.Current?.UpdateShortcutByKey(this.S3ExplorerItem.Bucket, key, result.result);
             this.S3ExplorerItem.Key = result.result;
             this.Load();
             ui.showInfoMessage("File is Moved");
@@ -687,7 +685,7 @@ class S3Explorer {
                 let response = await api.DeleteObject(this.S3ExplorerItem.Bucket, key);
                 if (response.isSuccessful) {
                     deleteCounter++;
-                    S3TreeView_1.S3TreeView.Current?.RemoveShortcutByKey(this.S3ExplorerItem.Bucket, key);
+                    LambdaTreeView_1.LambdaTreeView.Current?.RemoveShortcutByKey(this.S3ExplorerItem.Bucket, key);
                     if (this.S3ExplorerItem.Key === key) {
                         goto_parent_folder = true;
                     }
@@ -728,7 +726,7 @@ class S3Explorer {
         }
         let result = await api.RenameFile(this.S3ExplorerItem.Bucket, key, fileName);
         if (result.isSuccessful) {
-            S3TreeView_1.S3TreeView.Current?.UpdateShortcutByKey(this.S3ExplorerItem.Bucket, key, result.result);
+            LambdaTreeView_1.LambdaTreeView.Current?.UpdateShortcutByKey(this.S3ExplorerItem.Bucket, key, result.result);
             this.S3ExplorerItem.Key = result.result;
             this.Load();
             ui.showInfoMessage(" File is Renamed");

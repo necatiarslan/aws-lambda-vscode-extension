@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ViewType = exports.S3TreeDataProvider = void 0;
+exports.ViewType = exports.LambdaTreeDataProvider = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const vscode = require("vscode");
 const LambdaTreeItem_1 = require("./LambdaTreeItem");
 const LambdaTreeView_1 = require("./LambdaTreeView");
-class S3TreeDataProvider {
+class LambdaTreeDataProvider {
     constructor() {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -208,9 +208,9 @@ class S3TreeDataProvider {
         return element;
     }
 }
-exports.S3TreeDataProvider = S3TreeDataProvider;
+exports.LambdaTreeDataProvider = LambdaTreeDataProvider;
 var ViewType;
 (function (ViewType) {
     ViewType[ViewType["Bucket_Shortcut"] = 1] = "Bucket_Shortcut";
 })(ViewType = exports.ViewType || (exports.ViewType = {}));
-//# sourceMappingURL=S3TreeDataProvider.js.map
+//# sourceMappingURL=LambdaTreeDataProvider.js.map

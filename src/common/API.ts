@@ -7,9 +7,9 @@ import { sep } from "path";
 import { join } from "path";
 import { parseKnownFiles, SourceProfileInit } from "../aws-sdk/parseKnownFiles";
 import { ParsedIniData } from "@aws-sdk/types";
-import * as s3_helper from '../s3/S3Helper'
+import * as s3_helper from '../lambda/S3Helper'
 import * as fs from 'fs';
-import * as S3TreeView from '../s3/S3TreeView';
+import * as LambdaTreeView from '../lambda/LambdaTreeView';
 import { error } from "console";
 
 export function IsSharedIniFileCredentials(credentials:any|undefined=undefined)
@@ -73,9 +73,9 @@ function GetCredentials()
   let credentials = AWS.config.credentials
   if(IsSharedIniFileCredentials())
   {
-    if(S3TreeView.S3TreeView.Current && S3TreeView.S3TreeView.Current?.AwsProfile != "default")
+    if(LambdaTreeView.LambdaTreeView.Current && LambdaTreeView.LambdaTreeView.Current?.AwsProfile != "default")
     {
-      credentials = new AWS.SharedIniFileCredentials({ profile: S3TreeView.S3TreeView.Current?.AwsProfile });
+      credentials = new AWS.SharedIniFileCredentials({ profile: LambdaTreeView.LambdaTreeView.Current?.AwsProfile });
     }
   }
   ui.logToOutput("Aws credentials provider " + GetCredentialProvider(credentials));
@@ -87,7 +87,7 @@ function GetS3Client() {
   let s3 = undefined; 
 
   let credentials = GetCredentials();
-  s3 = new AWS.S3({ credentials: credentials, endpoint:S3TreeView.S3TreeView.Current?.AwsEndPoint});
+  s3 = new AWS.S3({ credentials: credentials, endpoint:LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint});
   
   return s3;
 }

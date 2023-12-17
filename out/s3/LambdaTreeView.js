@@ -3,12 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LambdaTreeView = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const vscode = require("vscode");
-const S3TreeItem_1 = require("./S3TreeItem");
-const S3TreeDataProvider_1 = require("./S3TreeDataProvider");
+const LambdaTreeItem_1 = require("./LambdaTreeItem");
+const LambdaTreeDataProvider_1 = require("./LambdaTreeDataProvider");
 const ui = require("../common/UI");
 const api = require("../common/API");
-const S3Explorer_1 = require("./S3Explorer");
-const S3Search_1 = require("./S3Search");
 class LambdaTreeView {
     constructor(context) {
         this.FilterString = "";
@@ -17,7 +15,7 @@ class LambdaTreeView {
         this.AwsProfile = "default";
         ui.logToOutput('TreeView.constructor Started');
         this.context = context;
-        this.treeDataProvider = new S3TreeDataProvider_1.S3TreeDataProvider();
+        this.treeDataProvider = new LambdaTreeDataProvider_1.LambdaTreeDataProvider();
         this.LoadState();
         this.view = vscode.window.createTreeView('LambdaTreeView', { treeDataProvider: this.treeDataProvider, showCollapseAll: true });
         this.Refresh();
@@ -196,7 +194,7 @@ class LambdaTreeView {
     }
     async RemoveBucket(node) {
         ui.logToOutput('LambdaTreeView.RemoveBucket Started');
-        if (node.TreeItemType !== S3TreeItem_1.TreeItemType.Bucket) {
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Bucket) {
             return;
         }
         if (!node.Bucket) {
@@ -207,7 +205,7 @@ class LambdaTreeView {
     }
     async Goto(node) {
         ui.logToOutput('LambdaTreeView.Goto Started');
-        if (node.TreeItemType !== S3TreeItem_1.TreeItemType.Bucket) {
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Bucket) {
             return;
         }
         if (!node.Bucket) {
@@ -217,7 +215,6 @@ class LambdaTreeView {
         if (shortcut === undefined) {
             return;
         }
-        S3Explorer_1.S3Explorer.Render(this.context.extensionUri, node, shortcut);
     }
     async AddOrRemoveShortcut(Bucket, Key) {
         ui.logToOutput('LambdaTreeView.AddOrRemoveShortcut Started');
@@ -260,19 +257,18 @@ class LambdaTreeView {
     }
     async RemoveShortcut(node) {
         ui.logToOutput('LambdaTreeView.RemoveShortcut Started');
-        if (node.TreeItemType !== S3TreeItem_1.TreeItemType.Shortcut) {
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Shortcut) {
             return;
         }
         if (!node.Bucket || !node.Shortcut) {
             return;
         }
         this.treeDataProvider.RemoveShortcut(node.Bucket, node.Shortcut);
-        S3Explorer_1.S3Explorer.Current?.RenderHtml(); //to update shortcut icon
         this.SaveState();
     }
     async CopyShortcut(node) {
         ui.logToOutput('LambdaTreeView.CopyShortcut Started');
-        if (node.TreeItemType !== S3TreeItem_1.TreeItemType.Shortcut) {
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Shortcut) {
             return;
         }
         if (!node.Bucket || !node.Shortcut) {
@@ -294,11 +290,9 @@ class LambdaTreeView {
     }
     async ShowS3Explorer(node) {
         ui.logToOutput('LambdaTreeView.ShowS3Explorer Started');
-        S3Explorer_1.S3Explorer.Render(this.context.extensionUri, node);
     }
     async ShowS3Search(node) {
         ui.logToOutput('LambdaTreeView.ShowS3Search Started');
-        S3Search_1.S3Search.Render(this.context.extensionUri, node);
     }
     async SelectAwsProfile(node) {
         ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');
@@ -335,4 +329,4 @@ class LambdaTreeView {
     }
 }
 exports.LambdaTreeView = LambdaTreeView;
-//# sourceMappingURL=S3TreeView.js.map
+//# sourceMappingURL=LambdaTreeView.js.map

@@ -1,14 +1,14 @@
 {
-  "name": "aws-s3-vscode-extension",
-  "displayName": "Aws S3",
+  "name": "aws-lambda-vscode-extension",
+  "displayName": "Aws Lambda",
   "description": "Browse Your AWS S3 Buckets, Upload, Download, Delete Files",
-  "version": "1.5.0",
+  "version": "1.0.0",
   "publisher": "NecatiARSLAN",
   "repository": {
     "type": "git",
-    "url": "https://github.com/necatiarslan/aws-s3"
+    "url": "https://github.com/necatiarslan/aws-lambda"
   },
-  "icon": "media/aws-s3-logo-extension.png",
+  "icon": "media/aws-lambda-logo-extension.png",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -20,184 +20,184 @@
     "S3"
   ],
   "activationEvents": [
-    "onView:S3TreeView"
+    
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "S3TreeView.Refresh",
+        "command": "LambdaTreeView.Refresh",
         "title": "Refresh",
         "icon": "$(refresh)"
       },
       {
-        "command": "S3TreeView.Filter",
+        "command": "LambdaTreeView.Filter",
         "title": "Filter",
         "icon": "$(filter)"
       },
       {
-        "command": "S3TreeView.ShowOnlyFavorite",
+        "command": "LambdaTreeView.ShowOnlyFavorite",
         "title": "Show Only Favorite",
         "icon": "$(bookmark)"
       },
       {
-        "command": "S3TreeView.ShowHiddenNodes",
+        "command": "LambdaTreeView.ShowHiddenNodes",
         "title": "Show Hidden Nodes",
         "icon": "$(eye-closed)"
       },
       {
-        "command": "S3TreeView.AddToFav",
+        "command": "LambdaTreeView.AddToFav",
         "title": "Fav"
       },
       {
-        "command": "S3TreeView.DeleteFromFav",
+        "command": "LambdaTreeView.DeleteFromFav",
         "title": "UnFav"
       },
       {
-        "command": "S3TreeView.HideNode",
+        "command": "LambdaTreeView.HideNode",
         "title": "Hide"
       },
       {
-        "command": "S3TreeView.UnHideNode",
+        "command": "LambdaTreeView.UnHideNode",
         "title": "UnHide"
       },
       {
-        "command": "S3TreeView.AddBucket",
+        "command": "LambdaTreeView.AddBucket",
         "title": "Add Bucket",
         "icon": "$(add)"
       },
       {
-        "command": "S3TreeView.RemoveBucket",
+        "command": "LambdaTreeView.RemoveBucket",
         "title": "Remove Bucket"
       },
       {
-        "command": "S3TreeView.Goto",
+        "command": "LambdaTreeView.Goto",
         "title": "Goto File/Folder"
       },
       {
-        "command": "S3TreeView.RemoveShortcut",
+        "command": "LambdaTreeView.RemoveShortcut",
         "title": "Remove Shortcut"
       },
       {
-        "command": "S3TreeView.AddShortcut",
+        "command": "LambdaTreeView.AddShortcut",
         "title": "Add Shortcut"
       },
       {
-        "command": "S3TreeView.CopyShortcut",
+        "command": "LambdaTreeView.CopyShortcut",
         "title": "Copy Shortcut"
       },
       {
-        "command": "S3TreeView.ShowS3Explorer",
+        "command": "LambdaTreeView.ShowS3Explorer",
         "title": "Open",
         "icon": "$(preview)"
       },
       {
-        "command": "S3TreeView.ShowS3Search",
+        "command": "LambdaTreeView.ShowS3Search",
         "title": "Search",
         "icon": "$(search)"
       },
       {
-        "command": "S3TreeView.SelectAwsProfile",
+        "command": "LambdaTreeView.SelectAwsProfile",
         "title": "Select Aws Profile",
         "icon": "$(account)"
       },
       {
-        "command": "S3TreeView.UpdateAwsEndPoint",
+        "command": "LambdaTreeView.UpdateAwsEndPoint",
         "title": "Update Aws EndPoint"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "S3TreeView.ShowOnlyFavorite",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.ShowOnlyFavorite",
+          "when": "view == LambdaTreeView",
           "group": "navigation@1"
         },
         {
-          "command": "S3TreeView.ShowHiddenNodes",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.ShowHiddenNodes",
+          "when": "view == LambdaTreeView",
           "group": "navigation@2"
         },
         {
-          "command": "S3TreeView.Filter",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.Filter",
+          "when": "view == LambdaTreeView",
           "group": "navigation@3"
         },
         {
-          "command": "S3TreeView.AddBucket",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.AddBucket",
+          "when": "view == LambdaTreeView",
           "group": "navigation@4"
         },
         {
-          "command": "S3TreeView.SelectAwsProfile",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.SelectAwsProfile",
+          "when": "view == LambdaTreeView",
           "group": "navigation@6"
         },
         {
-          "command": "S3TreeView.Refresh",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.Refresh",
+          "when": "view == LambdaTreeView",
           "group": "navigation@7"
         },
         {
-          "command": "S3TreeView.UpdateAwsEndPoint",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.UpdateAwsEndPoint",
+          "when": "view == LambdaTreeView",
           "group": "other"
         }
       ],
       "view/item/context": [
         {
-          "command": "S3TreeView.AddToFav",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.AddToFav",
+          "when": "view == LambdaTreeView",
           "group": "Filter"
         },
         {
-          "command": "S3TreeView.DeleteFromFav",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.DeleteFromFav",
+          "when": "view == LambdaTreeView",
           "group": "Filter"
         },
         {
-          "command": "S3TreeView.HideNode",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.HideNode",
+          "when": "view == LambdaTreeView",
           "group": "Filter"
         },
         {
-          "command": "S3TreeView.UnHideNode",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.UnHideNode",
+          "when": "view == LambdaTreeView",
           "group": "Filter"
         },
         {
-          "command": "S3TreeView.RemoveBucket",
-          "when": "view == S3TreeView && viewItem == Bucket",
+          "command": "LambdaTreeView.RemoveBucket",
+          "when": "view == LambdaTreeView && viewItem == Bucket",
           "group": "Bucket"
         },
         {
-          "command": "S3TreeView.Goto",
-          "when": "view == S3TreeView && viewItem == Bucket",
+          "command": "LambdaTreeView.Goto",
+          "when": "view == LambdaTreeView && viewItem == Bucket",
           "group": "Bucket"
         },
         {
-          "command": "S3TreeView.RemoveShortcut",
-          "when": "view == S3TreeView && viewItem == Shortcut",
+          "command": "LambdaTreeView.RemoveShortcut",
+          "when": "view == LambdaTreeView && viewItem == Shortcut",
           "group": "Shortcut"
         },
         {
-          "command": "S3TreeView.AddShortcut",
-          "when": "view == S3TreeView && viewItem == Bucket",
+          "command": "LambdaTreeView.AddShortcut",
+          "when": "view == LambdaTreeView && viewItem == Bucket",
           "group": "Shortcut"
         },
         {
-          "command": "S3TreeView.CopyShortcut",
-          "when": "view == S3TreeView && viewItem == Shortcut",
+          "command": "LambdaTreeView.CopyShortcut",
+          "when": "view == LambdaTreeView && viewItem == Shortcut",
           "group": "Shortcut"
         },
         {
-          "command": "S3TreeView.ShowS3Explorer",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.ShowS3Explorer",
+          "when": "view == LambdaTreeView",
           "group": "inline"
         },
         {
-          "command": "S3TreeView.ShowS3Search",
-          "when": "view == S3TreeView",
+          "command": "LambdaTreeView.ShowS3Search",
+          "when": "view == LambdaTreeView",
           "group": "inline"
         }
       ]
@@ -205,24 +205,24 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "aws-s3-vscode-extension",
-          "title": "Aws S3",
-          "icon": "media/aws-s3-logo-activitybar.png"
+          "id": "aws-lambda-vscode-extension",
+          "title": "Aws Lambda",
+          "icon": "media/aws-lambda-logo-activitybar.png"
         }
       ]
     },
     "views": {
-      "aws-s3-vscode-extension": [
+      "aws-lambda-vscode-extension": [
         {
-          "id": "S3TreeView",
-          "name": "Aws S3",
-          "icon": "media/aws-s3-logo-activitybar.png"
+          "id": "LambdaTreeView",
+          "name": "Aws Lambda",
+          "icon": "media/aws-lambda-logo-activitybar.png"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "S3TreeView",
+        "view": "LambdaTreeView",
         "contents": "\n\n\n\n Please wait... \n\n If you can not connect after a while check your Aws Credentials, Network and Proxy settings. \n\n\n\n To Access Aws, you need to configure aws credentials. \n For more detail on Aws Credentials [Click Here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) \n For a Youtube Tutorial [Click Here](https://www.youtube.com/watch?v=SON8sY1iOBU)"
       }
     ]

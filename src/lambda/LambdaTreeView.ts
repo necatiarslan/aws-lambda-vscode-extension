@@ -1,18 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from 'vscode';
-import { S3TreeItem, TreeItemType } from './S3TreeItem';
-import { S3TreeDataProvider } from './S3TreeDataProvider';
+import { LambdaTreeItem, TreeItemType } from './LambdaTreeItem';
+import { LambdaTreeDataProvider } from './LambdaTreeDataProvider';
 import * as ui from '../common/UI';
 import * as api from '../common/API';
-import { APIGateway } from 'aws-sdk';
-import { S3Explorer } from './S3Explorer';
-import { S3Search } from './S3Search';
 
-export class S3TreeView {
+export class LambdaTreeView {
 
-	public static Current: S3TreeView | undefined;
-	public view: vscode.TreeView<S3TreeItem>;
-	public treeDataProvider: S3TreeDataProvider;
+	public static Current: LambdaTreeView | undefined;
+	public view: vscode.TreeView<LambdaTreeItem>;
+	public treeDataProvider: LambdaTreeDataProvider;
 	public context: vscode.ExtensionContext;
 	public FilterString: string = "";
 	public isShowOnlyFavorite: boolean = false;
@@ -23,12 +20,12 @@ export class S3TreeView {
 	constructor(context: vscode.ExtensionContext) {
 		ui.logToOutput('TreeView.constructor Started');
 		this.context = context;
-		this.treeDataProvider = new S3TreeDataProvider();
+		this.treeDataProvider = new LambdaTreeDataProvider();
 		this.LoadState();
-		this.view = vscode.window.createTreeView('S3TreeView', { treeDataProvider: this.treeDataProvider, showCollapseAll: true });
+		this.view = vscode.window.createTreeView('LambdaTreeView', { treeDataProvider: this.treeDataProvider, showCollapseAll: true });
 		this.Refresh();
 		context.subscriptions.push(this.view);
-		S3TreeView.Current = this;
+		LambdaTreeView.Current = this;
 		this.SetFilterMessage();
 		this.TestAwsConnection();
 	}
@@ -38,11 +35,11 @@ export class S3TreeView {
 	}
 
 	Refresh(): void {
-		ui.logToOutput('S3TreeView.refresh Started');
+		ui.logToOutput('LambdaTreeView.refresh Started');
 
 		vscode.window.withProgress({
 			location: vscode.ProgressLocation.Window,
-			title: "Aws S3: Loading...",
+			title: "Aws Lambda: Loading...",
 		}, (progress, token) => {
 			progress.report({ increment: 0 });
 
@@ -53,7 +50,7 @@ export class S3TreeView {
 	}
 
 	LoadTreeItems(){
-		ui.logToOutput('S3TreeView.loadTreeItems Started');
+		ui.logToOutput('LambdaTreeView.loadTreeItems Started');
 
 		//this.treeDataProvider.LoadRegionNodeList();
 		//this.treeDataProvider.LoadLogGroupNodeList();
@@ -63,7 +60,7 @@ export class S3TreeView {
 	}
 
 	ResetView(): void {
-		ui.logToOutput('S3TreeView.resetView Started');
+		ui.logToOutput('LambdaTreeView.resetView Started');
 		this.FilterString = '';
 
 		this.treeDataProvider.Refresh();
@@ -73,32 +70,32 @@ export class S3TreeView {
 		this.Refresh();
 	}
 
-	async AddToFav(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.AddToFav Started');
+	async AddToFav(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.AddToFav Started');
 		node.IsFav = true;
 		node.refreshUI();
 	}
 
-	async HideNode(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.HideNode Started');
+	async HideNode(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.HideNode Started');
 		node.IsHidden = true;
 
 		this.treeDataProvider.Refresh();
 	}
 
-	async UnHideNode(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.UnHideNode Started');
+	async UnHideNode(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.UnHideNode Started');
 		node.IsHidden = false;
 	}
 
-	async DeleteFromFav(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.DeleteFromFav Started');
+	async DeleteFromFav(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.DeleteFromFav Started');
 		node.IsFav = false;
 		node.refreshUI();
 	}
 
 	async Filter() {
-		ui.logToOutput('S3TreeView.Filter Started');
+		ui.logToOutput('LambdaTreeView.Filter Started');
 		let filterStringTemp = await vscode.window.showInputBox({ value: this.FilterString, placeHolder: 'Enter Your Filter Text' });
 
 		if (filterStringTemp === undefined) { return; }
@@ -110,7 +107,7 @@ export class S3TreeView {
 	}
 
 	async ShowOnlyFavorite() {
-		ui.logToOutput('S3TreeView.ShowOnlyFavorite Started');
+		ui.logToOutput('LambdaTreeView.ShowOnlyFavorite Started');
 		this.isShowOnlyFavorite = !this.isShowOnlyFavorite;
 		this.treeDataProvider.Refresh();
 		this.SetFilterMessage();
@@ -118,7 +115,7 @@ export class S3TreeView {
 	}
 
 	async ShowHiddenNodes() {
-		ui.logToOutput('S3TreeView.ShowHiddenNodes Started');
+		ui.logToOutput('LambdaTreeView.ShowHiddenNodes Started');
 		this.isShowHiddenNodes = !this.isShowHiddenNodes;
 		this.treeDataProvider.Refresh();
 		this.SetFilterMessage();
@@ -126,11 +123,11 @@ export class S3TreeView {
 	}
 
 	async SetViewTitle(){
-		this.view.title = "Aws S3";
+		this.view.title = "Aws Lambda";
 	}
 
 	SaveState() {
-		ui.logToOutput('S3TreeView.saveState Started');
+		ui.logToOutput('LambdaTreeView.saveState Started');
 		try {
 
 			this.context.globalState.update('AwsProfile', this.AwsProfile);
@@ -142,14 +139,14 @@ export class S3TreeView {
 			this.context.globalState.update('ViewType', this.treeDataProvider.ViewType);
 			this.context.globalState.update('AwsEndPoint', this.AwsEndPoint);
 
-			ui.logToOutput("S3TreeView.saveState Successfull");
+			ui.logToOutput("LambdaTreeView.saveState Successfull");
 		} catch (error) {
-			ui.logToOutput("S3TreeView.saveState Error !!!");
+			ui.logToOutput("LambdaTreeView.saveState Error !!!");
 		}
 	}
 
 	LoadState() {
-		ui.logToOutput('S3TreeView.loadState Started');
+		ui.logToOutput('LambdaTreeView.loadState Started');
 		try {
 
 			let AwsProfileTemp: string | undefined = this.context.globalState.get('AwsProfile');
@@ -189,12 +186,12 @@ export class S3TreeView {
 			let AwsEndPointTemp: string | undefined = this.context.globalState.get('AwsEndPoint');
 			this.AwsEndPoint = AwsEndPointTemp;
 
-			ui.logToOutput("S3TreeView.loadState Successfull");
+			ui.logToOutput("LambdaTreeView.loadState Successfull");
 
 		} 
 		catch (error) 
 		{
-			ui.logToOutput("S3TreeView.loadState Error !!!");
+			ui.logToOutput("LambdaTreeView.loadState Error !!!");
 		}
 	}
 
@@ -219,7 +216,7 @@ export class S3TreeView {
 	}
 
 	async AddBucket(){
-		ui.logToOutput('S3TreeView.AddBucket Started');
+		ui.logToOutput('LambdaTreeView.AddBucket Started');
 
 		let selectedBucketName = await vscode.window.showInputBox({ placeHolder: 'Enter Bucket Name / Search Text' });
 		if(selectedBucketName===undefined){ return; }
@@ -237,8 +234,8 @@ export class S3TreeView {
 		this.SaveState();
 	}
 
-	async RemoveBucket(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.RemoveBucket Started');
+	async RemoveBucket(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.RemoveBucket Started');
 		
 		if(node.TreeItemType !== TreeItemType.Bucket) { return;}
 		if(!node.Bucket) { return; }
@@ -247,8 +244,8 @@ export class S3TreeView {
 		this.SaveState();
 	}
 
-	async Goto(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.Goto Started');
+	async Goto(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.Goto Started');
 		
 		if(node.TreeItemType !== TreeItemType.Bucket) { return;}
 		if(!node.Bucket) { return; }
@@ -256,11 +253,11 @@ export class S3TreeView {
 		let shortcut = await vscode.window.showInputBox({ placeHolder: 'Enter a Folder/File Key' });
 		if(shortcut===undefined){ return; }
 		
-		S3Explorer.Render(this.context.extensionUri, node, shortcut);
+		
 	}
 
 	async AddOrRemoveShortcut(Bucket:string, Key:string) {
-		ui.logToOutput('S3TreeView.AddOrRemoveShortcut Started');
+		ui.logToOutput('LambdaTreeView.AddOrRemoveShortcut Started');
 		if(!Bucket || !Key) { return; }
 		
 		if(this.treeDataProvider.DoesShortcutExists(Bucket, Key))
@@ -276,7 +273,7 @@ export class S3TreeView {
 	}
 
 	async RemoveShortcutByKey(Bucket:string, Key:string) {
-		ui.logToOutput('S3TreeView.RemoveShortcutByKey Started');
+		ui.logToOutput('LambdaTreeView.RemoveShortcutByKey Started');
 		if(!Bucket || !Key) { return; }
 		
 		if(this.treeDataProvider.DoesShortcutExists(Bucket, Key))
@@ -287,7 +284,7 @@ export class S3TreeView {
 	}
 
 	async UpdateShortcutByKey(Bucket:string, Key:string, NewKey:string) {
-		ui.logToOutput('S3TreeView.RemoveShortcutByKey Started');
+		ui.logToOutput('LambdaTreeView.RemoveShortcutByKey Started');
 		if(!Bucket || !Key) { return; }
 		
 		if(this.treeDataProvider.DoesShortcutExists(Bucket, Key))
@@ -302,26 +299,26 @@ export class S3TreeView {
 		return this.treeDataProvider.DoesShortcutExists(Bucket, Key);
 	}
 
-	async RemoveShortcut(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.RemoveShortcut Started');
+	async RemoveShortcut(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.RemoveShortcut Started');
 		if(node.TreeItemType !== TreeItemType.Shortcut) { return;}
 		if(!node.Bucket || !node.Shortcut) { return; }
 		
 		this.treeDataProvider.RemoveShortcut(node.Bucket, node.Shortcut);
-		S3Explorer.Current?.RenderHtml();//to update shortcut icon
+		
 		this.SaveState();
 	}
 
-	async CopyShortcut(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.CopyShortcut Started');
+	async CopyShortcut(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.CopyShortcut Started');
 		if(node.TreeItemType !== TreeItemType.Shortcut) { return;}
 		if(!node.Bucket || !node.Shortcut) { return; }
 		
 		vscode.env.clipboard.writeText(node.Shortcut)
 	}
 
-	async AddShortcut(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.AddShortcut Started');
+	async AddShortcut(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.AddShortcut Started');
 		if(!node.Bucket) { return; }
 		
 		let bucket = node.Bucket
@@ -332,22 +329,22 @@ export class S3TreeView {
 		this.AddOrRemoveShortcut(bucket, shortcut)
 	}
 
-	async ShowS3Explorer(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.ShowS3Explorer Started');
+	async ShowS3Explorer(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.ShowS3Explorer Started');
 		
 
-		S3Explorer.Render(this.context.extensionUri, node);
+		
 	}
 
-	async ShowS3Search(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.ShowS3Search Started');
+	async ShowS3Search(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.ShowS3Search Started');
 		
 
-		S3Search.Render(this.context.extensionUri, node);
+		
 	}
 
-	async SelectAwsProfile(node: S3TreeItem) {
-		ui.logToOutput('S3TreeView.SelectAwsProfile Started');
+	async SelectAwsProfile(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');
 
 		if (!api.IsSharedIniFileCredentials())
 		{
@@ -368,7 +365,7 @@ export class S3TreeView {
 	}
 
 	async UpdateAwsEndPoint() {
-		ui.logToOutput('S3TreeView.UpdateAwsEndPoint Started');
+		ui.logToOutput('LambdaTreeView.UpdateAwsEndPoint Started');
 
 		let awsEndPointUrl = await vscode.window.showInputBox({ placeHolder: 'Enter Aws End Point URL (Leave Empty To Return To Default)' });
 		if(awsEndPointUrl===undefined){ return; }

@@ -1,88 +1,88 @@
 import * as vscode from 'vscode';
 import * as ui from './common/UI';
-import { S3TreeView } from './s3/S3TreeView';
-import { S3TreeItem } from './s3/S3TreeItem';
+import { LambdaTreeView } from './lambda/LambdaTreeView';
+import { LambdaTreeItem } from './lambda/LambdaTreeItem';
 
 export function activate(context: vscode.ExtensionContext) {
-	ui.logToOutput('Aws S3 Extension activation started');
+	ui.logToOutput('Aws Lambda Extension activation started');
 
-	let treeView:S3TreeView = new S3TreeView(context);
+	let treeView:LambdaTreeView = new LambdaTreeView(context);
 
-	vscode.commands.registerCommand('S3TreeView.Refresh', () => {
+	vscode.commands.registerCommand('LambdaTreeView.Refresh', () => {
 		treeView.Refresh();
 	});
 
-	vscode.commands.registerCommand('S3TreeView.Filter', () => {
+	vscode.commands.registerCommand('LambdaTreeView.Filter', () => {
 		treeView.Filter();
 	});
 
-	vscode.commands.registerCommand('S3TreeView.ShowOnlyFavorite', () => {
+	vscode.commands.registerCommand('LambdaTreeView.ShowOnlyFavorite', () => {
 		treeView.ShowOnlyFavorite();
 	});
 
-	vscode.commands.registerCommand('S3TreeView.ShowHiddenNodes', () => {
+	vscode.commands.registerCommand('LambdaTreeView.ShowHiddenNodes', () => {
 		treeView.ShowHiddenNodes();
 	});
 
-	vscode.commands.registerCommand('S3TreeView.AddToFav', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.AddToFav', (node: LambdaTreeItem) => {
 		treeView.AddToFav(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.DeleteFromFav', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.DeleteFromFav', (node: LambdaTreeItem) => {
 		treeView.DeleteFromFav(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.HideNode', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.HideNode', (node: LambdaTreeItem) => {
 		treeView.HideNode(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.UnHideNode', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.UnHideNode', (node: LambdaTreeItem) => {
 		treeView.UnHideNode(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.AddBucket', () => {
+	vscode.commands.registerCommand('LambdaTreeView.AddBucket', () => {
 		treeView.AddBucket();
 	});
 
-	vscode.commands.registerCommand('S3TreeView.RemoveBucket', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.RemoveBucket', (node: LambdaTreeItem) => {
 		treeView.RemoveBucket(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.Goto', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.Goto', (node: LambdaTreeItem) => {
 		treeView.Goto(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.RemoveShortcut', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.RemoveShortcut', (node: LambdaTreeItem) => {
 		treeView.RemoveShortcut(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.AddShortcut', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.AddShortcut', (node: LambdaTreeItem) => {
 		treeView.AddShortcut(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.CopyShortcut', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.CopyShortcut', (node: LambdaTreeItem) => {
 		treeView.CopyShortcut(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.ShowS3Explorer', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.ShowS3Explorer', (node: LambdaTreeItem) => {
 		treeView.ShowS3Explorer(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.ShowS3Search', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.ShowS3Search', (node: LambdaTreeItem) => {
 		treeView.ShowS3Search(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.SelectAwsProfile', (node: S3TreeItem) => {
+	vscode.commands.registerCommand('LambdaTreeView.SelectAwsProfile', (node: LambdaTreeItem) => {
 		treeView.SelectAwsProfile(node);
 	});
 
-	vscode.commands.registerCommand('S3TreeView.UpdateAwsEndPoint', () => {
+	vscode.commands.registerCommand('LambdaTreeView.UpdateAwsEndPoint', () => {
 		treeView.UpdateAwsEndPoint();
 	});
 
-	ui.logToOutput('Aws S3 Extension activation completed');
+	ui.logToOutput('Aws Lambda Extension activation completed');
 }
 
 export function deactivate() {
-	ui.logToOutput('Aws S3 is now de-active!');
+	ui.logToOutput('Aws Lambda is now de-active!');
 }

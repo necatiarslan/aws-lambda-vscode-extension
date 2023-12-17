@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from 'vscode';
-import { S3TreeItem, TreeItemType } from './S3TreeItem';
-import { S3TreeView } from './S3TreeView';
+import { LambdaTreeItem, TreeItemType } from './LambdaTreeItem';
+import { LambdaTreeView } from './LambdaTreeView';
 
-export class S3TreeDataProvider implements vscode.TreeDataProvider<S3TreeItem>
+export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTreeItem>
 {
-	private _onDidChangeTreeData: vscode.EventEmitter<S3TreeItem | undefined | void> = new vscode.EventEmitter<S3TreeItem | undefined | void>();
-	readonly onDidChangeTreeData: vscode.Event<S3TreeItem | undefined | void> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<LambdaTreeItem | undefined | void> = new vscode.EventEmitter<LambdaTreeItem | undefined | void>();
+	readonly onDidChangeTreeData: vscode.Event<LambdaTreeItem | undefined | void> = this._onDidChangeTreeData.event;
 	
-	BucketNodeList: S3TreeItem[] = [];
-	ShortcutNodeList: S3TreeItem[] = [];
+	BucketNodeList: LambdaTreeItem[] = [];
+	ShortcutNodeList: LambdaTreeItem[] = [];
 
 	private BucketList: string[] = [];
 	private ShortcutList: [[string,string]] = [["???","???"]];
@@ -141,7 +141,7 @@ export class S3TreeDataProvider implements vscode.TreeDataProvider<S3TreeItem>
 		
 		for(var bucket of this.BucketList)
 		{
-			let treeItem = new S3TreeItem(bucket, TreeItemType.Bucket);
+			let treeItem = new LambdaTreeItem(bucket, TreeItemType.Bucket);
 			treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 			treeItem.Bucket = bucket;
 			this.BucketNodeList.push(treeItem);
@@ -153,15 +153,15 @@ export class S3TreeDataProvider implements vscode.TreeDataProvider<S3TreeItem>
 		
 		for(var lg of this.ShortcutList)
 		{
-			let treeItem = new S3TreeItem(lg[1], TreeItemType.Shortcut);
+			let treeItem = new LambdaTreeItem(lg[1], TreeItemType.Shortcut);
 			treeItem.Bucket = lg[0];
 			treeItem.Shortcut = lg[1];
 			this.ShortcutNodeList.push(treeItem);
 		}
 	}
 
-	getChildren(node: S3TreeItem): Thenable<S3TreeItem[]> {
-		let result:S3TreeItem[] = [];
+	getChildren(node: LambdaTreeItem): Thenable<LambdaTreeItem[]> {
+		let result:LambdaTreeItem[] = [];
 
 		if(this.ViewType === ViewType.Bucket_Shortcut)
 		{
@@ -171,16 +171,16 @@ export class S3TreeDataProvider implements vscode.TreeDataProvider<S3TreeItem>
 		return Promise.resolve(result);
 	}
 
-	GetNodesShortcut(node: S3TreeItem):S3TreeItem[]
+	GetNodesShortcut(node: LambdaTreeItem):LambdaTreeItem[]
 	{
-		let result:S3TreeItem[] = [];
+		let result:LambdaTreeItem[] = [];
 		result = this.GetShortcutNodes();
 		return result;
 	}
 
-	GetNodesBucketShortcut(node: S3TreeItem):S3TreeItem[]
+	GetNodesBucketShortcut(node: LambdaTreeItem):LambdaTreeItem[]
 	{
-		let result:S3TreeItem[] = [];
+		let result:LambdaTreeItem[] = [];
 		
 		if (!node) {
 			result = this.GetBucketNodes();
@@ -192,25 +192,25 @@ export class S3TreeDataProvider implements vscode.TreeDataProvider<S3TreeItem>
 		return result;
 	}
 
-	GetBucketNodes(): S3TreeItem[]{
-		var result: S3TreeItem[] = [];
+	GetBucketNodes(): LambdaTreeItem[]{
+		var result: LambdaTreeItem[] = [];
 		for (var node of this.BucketNodeList) {
-			if (S3TreeView.Current && S3TreeView.Current.FilterString && !node.IsFilterStringMatch(S3TreeView.Current.FilterString)) { continue; }
-			if (S3TreeView.Current && S3TreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
-			if (S3TreeView.Current && !S3TreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
+			if (LambdaTreeView.Current && LambdaTreeView.Current.FilterString && !node.IsFilterStringMatch(LambdaTreeView.Current.FilterString)) { continue; }
+			if (LambdaTreeView.Current && LambdaTreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
+			if (LambdaTreeView.Current && !LambdaTreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
 
 			result.push(node);
 		}
 		return result;
 	}
 
-	GetShortcutNodesParentBucket(BucketNode:S3TreeItem): S3TreeItem[]{
-		var result: S3TreeItem[] = [];
+	GetShortcutNodesParentBucket(BucketNode:LambdaTreeItem): LambdaTreeItem[]{
+		var result: LambdaTreeItem[] = [];
 		for (var node of this.ShortcutNodeList) {
 			if(!(node.Bucket === BucketNode.Bucket)) { continue; }
-			if (S3TreeView.Current && S3TreeView.Current.FilterString && !node.IsFilterStringMatch(S3TreeView.Current.FilterString)) { continue; }
-			if (S3TreeView.Current && S3TreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
-			if (S3TreeView.Current && !S3TreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
+			if (LambdaTreeView.Current && LambdaTreeView.Current.FilterString && !node.IsFilterStringMatch(LambdaTreeView.Current.FilterString)) { continue; }
+			if (LambdaTreeView.Current && LambdaTreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
+			if (LambdaTreeView.Current && !LambdaTreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
 
 			node.Parent = BucketNode;
 			if(BucketNode.Children.indexOf(node) === -1)
@@ -222,19 +222,19 @@ export class S3TreeDataProvider implements vscode.TreeDataProvider<S3TreeItem>
 		return result;
 	}
 
-	GetShortcutNodes(): S3TreeItem[]{
-		var result: S3TreeItem[] = [];
+	GetShortcutNodes(): LambdaTreeItem[]{
+		var result: LambdaTreeItem[] = [];
 		for (var node of this.ShortcutNodeList) {
-			if (S3TreeView.Current && S3TreeView.Current.FilterString && !node.IsFilterStringMatch(S3TreeView.Current.FilterString)) { continue; }
-			if (S3TreeView.Current && S3TreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
-			if (S3TreeView.Current && !S3TreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
+			if (LambdaTreeView.Current && LambdaTreeView.Current.FilterString && !node.IsFilterStringMatch(LambdaTreeView.Current.FilterString)) { continue; }
+			if (LambdaTreeView.Current && LambdaTreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
+			if (LambdaTreeView.Current && !LambdaTreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
 
 			result.push(node);
 		}
 		return result;
 	}
 	
-	getTreeItem(element: S3TreeItem): S3TreeItem {
+	getTreeItem(element: LambdaTreeItem): LambdaTreeItem {
 		return element;
 	}
 }

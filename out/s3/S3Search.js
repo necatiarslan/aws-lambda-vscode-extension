@@ -5,7 +5,7 @@ exports.S3Search = void 0;
 const vscode = require("vscode");
 const ui = require("../common/UI");
 const api = require("../common/API");
-const S3TreeView_1 = require("./S3TreeView");
+const LambdaTreeView_1 = require("./LambdaTreeView");
 const S3TreeItem_1 = require("./S3TreeItem");
 const S3ExplorerItem_1 = require("./S3ExplorerItem");
 const s3_helper = require("./S3Helper");
@@ -44,7 +44,7 @@ class S3Search {
     }
     async Load() {
         ui.logToOutput('S3Search.LoadLogs Started');
-        if (!S3TreeView_1.S3TreeView.Current) {
+        if (!LambdaTreeView_1.LambdaTreeView.Current) {
             return;
         }
         var result = await api.SearchS3Object(this.S3ExplorerItem.Bucket, this.S3ExplorerItem.Key, this.FileName, this.FileExtension, this.FolderName);
@@ -154,7 +154,7 @@ class S3Search {
                         </td>
                         <td style="width:20px">
                             <vscode-button appearance="icon" id="add_shortcut_${file.Key}">
-                                <span><img src="${S3TreeView_1.S3TreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, file.Key) ? bookmark_yesUri : bookmark_noUri}"></img></span>
+                                <span><img src="${LambdaTreeView_1.LambdaTreeView.Current?.DoesShortcutExists(this.S3ExplorerItem.Bucket, file.Key) ? bookmark_yesUri : bookmark_noUri}"></img></span>
                             </vscode-button>
                         </td>
                         <td style="white-space:nowrap;">
@@ -267,7 +267,7 @@ class S3Search {
         <table>
             <tr>
                 <td>
-                    <vscode-link href="https://github.com/necatiarslan/aws-s3/issues/new">Bug Report & Feature Request</vscode-link>
+                    <vscode-link href="https://github.com/necatiarslan/aws-lambda/issues/new">Bug Report & Feature Request</vscode-link>
                 </td>
             </tr>
         </table>
@@ -332,7 +332,7 @@ class S3Search {
         }, undefined, this._disposables);
     }
     AddShortcut(key) {
-        S3TreeView_1.S3TreeView.Current?.AddOrRemoveShortcut(this.S3ExplorerItem.Bucket, key);
+        LambdaTreeView_1.LambdaTreeView.Current?.AddOrRemoveShortcut(this.S3ExplorerItem.Bucket, key);
         this.RenderHtml();
     }
     CopyS3URI(keys) {

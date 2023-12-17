@@ -9,9 +9,9 @@ const os_1 = require("os");
 const path_1 = require("path");
 const path_2 = require("path");
 const parseKnownFiles_1 = require("../aws-sdk/parseKnownFiles");
-const s3_helper = require("../s3/S3Helper");
+const s3_helper = require("../lambda/S3Helper");
 const fs = require("fs");
-const S3TreeView = require("../s3/S3TreeView");
+const LambdaTreeView = require("../lambda/LambdaTreeView");
 function IsSharedIniFileCredentials(credentials = undefined) {
     if (credentials) {
         return GetCredentialProvider(credentials) === "SharedIniFileCredentials";
@@ -56,8 +56,8 @@ function GetCredentials() {
     }
     let credentials = AWS.config.credentials;
     if (IsSharedIniFileCredentials()) {
-        if (S3TreeView.S3TreeView.Current && S3TreeView.S3TreeView.Current?.AwsProfile != "default") {
-            credentials = new AWS.SharedIniFileCredentials({ profile: S3TreeView.S3TreeView.Current?.AwsProfile });
+        if (LambdaTreeView.LambdaTreeView.Current && LambdaTreeView.LambdaTreeView.Current?.AwsProfile != "default") {
+            credentials = new AWS.SharedIniFileCredentials({ profile: LambdaTreeView.LambdaTreeView.Current?.AwsProfile });
         }
     }
     ui.logToOutput("Aws credentials provider " + GetCredentialProvider(credentials));
@@ -67,7 +67,7 @@ function GetCredentials() {
 function GetS3Client() {
     let s3 = undefined;
     let credentials = GetCredentials();
-    s3 = new AWS.S3({ credentials: credentials, endpoint: S3TreeView.S3TreeView.Current?.AwsEndPoint });
+    s3 = new AWS.S3({ credentials: credentials, endpoint: LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint });
     return s3;
 }
 function GetIAMClient() {
