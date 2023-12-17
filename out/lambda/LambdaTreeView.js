@@ -179,7 +179,7 @@ class LambdaTreeView {
         if (selectedLambdaName === undefined) {
             return;
         }
-        var resultLambda = await api.GetBucketList(selectedLambdaName);
+        var resultLambda = await api.GetLambdaList("us-east-1", selectedLambdaName);
         if (!resultLambda.isSuccessful) {
             return;
         }

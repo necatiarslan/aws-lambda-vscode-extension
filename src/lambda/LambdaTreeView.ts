@@ -221,7 +221,7 @@ export class LambdaTreeView {
 		let selectedLambdaName = await vscode.window.showInputBox({ placeHolder: 'Enter Lambda Name / Search Text' });
 		if(selectedLambdaName===undefined){ return; }
 
-		var resultLambda = await api.GetBucketList(selectedLambdaName);
+		var resultLambda = await api.GetLambdaList("us-east-1", selectedLambdaName);
 		if(!resultLambda.isSuccessful){ return; }
 
 		let selectedLambdaList = await vscode.window.showQuickPick(resultLambda.result, {canPickMany:true, placeHolder: 'Select Lambda(s)'});
