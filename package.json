@@ -1,0 +1,259 @@
+{
+  "name": "aws-s3-vscode-extension",
+  "displayName": "Aws S3",
+  "description": "Browse Your AWS S3 Buckets, Upload, Download, Delete Files",
+  "version": "1.5.0",
+  "publisher": "NecatiARSLAN",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/necatiarslan/aws-s3"
+  },
+  "icon": "media/aws-s3-logo-extension.png",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "AWS",
+    "S3"
+  ],
+  "activationEvents": [
+    "onView:S3TreeView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "S3TreeView.Refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "S3TreeView.Filter",
+        "title": "Filter",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "S3TreeView.ShowOnlyFavorite",
+        "title": "Show Only Favorite",
+        "icon": "$(bookmark)"
+      },
+      {
+        "command": "S3TreeView.ShowHiddenNodes",
+        "title": "Show Hidden Nodes",
+        "icon": "$(eye-closed)"
+      },
+      {
+        "command": "S3TreeView.AddToFav",
+        "title": "Fav"
+      },
+      {
+        "command": "S3TreeView.DeleteFromFav",
+        "title": "UnFav"
+      },
+      {
+        "command": "S3TreeView.HideNode",
+        "title": "Hide"
+      },
+      {
+        "command": "S3TreeView.UnHideNode",
+        "title": "UnHide"
+      },
+      {
+        "command": "S3TreeView.AddBucket",
+        "title": "Add Bucket",
+        "icon": "$(add)"
+      },
+      {
+        "command": "S3TreeView.RemoveBucket",
+        "title": "Remove Bucket"
+      },
+      {
+        "command": "S3TreeView.Goto",
+        "title": "Goto File/Folder"
+      },
+      {
+        "command": "S3TreeView.RemoveShortcut",
+        "title": "Remove Shortcut"
+      },
+      {
+        "command": "S3TreeView.AddShortcut",
+        "title": "Add Shortcut"
+      },
+      {
+        "command": "S3TreeView.CopyShortcut",
+        "title": "Copy Shortcut"
+      },
+      {
+        "command": "S3TreeView.ShowS3Explorer",
+        "title": "Open",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "S3TreeView.ShowS3Search",
+        "title": "Search",
+        "icon": "$(search)"
+      },
+      {
+        "command": "S3TreeView.SelectAwsProfile",
+        "title": "Select Aws Profile",
+        "icon": "$(account)"
+      },
+      {
+        "command": "S3TreeView.UpdateAwsEndPoint",
+        "title": "Update Aws EndPoint"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "S3TreeView.ShowOnlyFavorite",
+          "when": "view == S3TreeView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "S3TreeView.ShowHiddenNodes",
+          "when": "view == S3TreeView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "S3TreeView.Filter",
+          "when": "view == S3TreeView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "S3TreeView.AddBucket",
+          "when": "view == S3TreeView",
+          "group": "navigation@4"
+        },
+        {
+          "command": "S3TreeView.SelectAwsProfile",
+          "when": "view == S3TreeView",
+          "group": "navigation@6"
+        },
+        {
+          "command": "S3TreeView.Refresh",
+          "when": "view == S3TreeView",
+          "group": "navigation@7"
+        },
+        {
+          "command": "S3TreeView.UpdateAwsEndPoint",
+          "when": "view == S3TreeView",
+          "group": "other"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "S3TreeView.AddToFav",
+          "when": "view == S3TreeView",
+          "group": "Filter"
+        },
+        {
+          "command": "S3TreeView.DeleteFromFav",
+          "when": "view == S3TreeView",
+          "group": "Filter"
+        },
+        {
+          "command": "S3TreeView.HideNode",
+          "when": "view == S3TreeView",
+          "group": "Filter"
+        },
+        {
+          "command": "S3TreeView.UnHideNode",
+          "when": "view == S3TreeView",
+          "group": "Filter"
+        },
+        {
+          "command": "S3TreeView.RemoveBucket",
+          "when": "view == S3TreeView && viewItem == Bucket",
+          "group": "Bucket"
+        },
+        {
+          "command": "S3TreeView.Goto",
+          "when": "view == S3TreeView && viewItem == Bucket",
+          "group": "Bucket"
+        },
+        {
+          "command": "S3TreeView.RemoveShortcut",
+          "when": "view == S3TreeView && viewItem == Shortcut",
+          "group": "Shortcut"
+        },
+        {
+          "command": "S3TreeView.AddShortcut",
+          "when": "view == S3TreeView && viewItem == Bucket",
+          "group": "Shortcut"
+        },
+        {
+          "command": "S3TreeView.CopyShortcut",
+          "when": "view == S3TreeView && viewItem == Shortcut",
+          "group": "Shortcut"
+        },
+        {
+          "command": "S3TreeView.ShowS3Explorer",
+          "when": "view == S3TreeView",
+          "group": "inline"
+        },
+        {
+          "command": "S3TreeView.ShowS3Search",
+          "when": "view == S3TreeView",
+          "group": "inline"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aws-s3-vscode-extension",
+          "title": "Aws S3",
+          "icon": "media/aws-s3-logo-activitybar.png"
+        }
+      ]
+    },
+    "views": {
+      "aws-s3-vscode-extension": [
+        {
+          "id": "S3TreeView",
+          "name": "Aws S3",
+          "icon": "media/aws-s3-logo-activitybar.png"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "S3TreeView",
+        "contents": "\n\n\n\n Please wait... \n\n If you can not connect after a while check your Aws Credentials, Network and Proxy settings. \n\n\n\n To Access Aws, you need to configure aws credentials. \n For more detail on Aws Credentials [Click Here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) \n For a Youtube Tutorial [Click Here](https://www.youtube.com/watch?v=SON8sY1iOBU)"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.3",
+    "@types/vscode": "^1.71.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "@vscode/test-electron": "^2.1.5",
+    "eslint": "^8.18.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.0.0",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@aws-sdk/credential-provider-node": "^3.181.0",
+    "@vscode/codicons": "^0.0.32",
+    "@vscode/webview-ui-toolkit": "^1.2.0",
+    "aws-sdk": "^2.1271.0",
+    "clipboard": "^2.0.11",
+    "tmp": "^0.2.1"
+  }
+}
