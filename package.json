@@ -62,48 +62,22 @@
         "title": "UnHide"
       },
       {
-        "command": "LambdaTreeView.AddBucket",
-        "title": "Add Bucket",
+        "command": "LambdaTreeView.AddLambda",
+        "title": "Add Lambda",
         "icon": "$(add)"
       },
       {
-        "command": "LambdaTreeView.RemoveBucket",
-        "title": "Remove Bucket"
+        "command": "LambdaTreeView.RemoveLambda",
+        "title": "Remove Lambda"
       },
       {
         "command": "LambdaTreeView.Goto",
         "title": "Goto File/Folder"
       },
       {
-        "command": "LambdaTreeView.RemoveShortcut",
-        "title": "Remove Shortcut"
-      },
-      {
-        "command": "LambdaTreeView.AddShortcut",
-        "title": "Add Shortcut"
-      },
-      {
-        "command": "LambdaTreeView.CopyShortcut",
-        "title": "Copy Shortcut"
-      },
-      {
-        "command": "LambdaTreeView.ShowS3Explorer",
-        "title": "Open",
-        "icon": "$(preview)"
-      },
-      {
-        "command": "LambdaTreeView.ShowS3Search",
-        "title": "Search",
-        "icon": "$(search)"
-      },
-      {
         "command": "LambdaTreeView.SelectAwsProfile",
         "title": "Select Aws Profile",
         "icon": "$(account)"
-      },
-      {
-        "command": "LambdaTreeView.UpdateAwsEndPoint",
-        "title": "Update Aws EndPoint"
       }
     ],
     "menus": {
@@ -124,7 +98,7 @@
           "group": "navigation@3"
         },
         {
-          "command": "LambdaTreeView.AddBucket",
+          "command": "LambdaTreeView.AddLambda",
           "when": "view == LambdaTreeView",
           "group": "navigation@4"
         },
@@ -137,11 +111,6 @@
           "command": "LambdaTreeView.Refresh",
           "when": "view == LambdaTreeView",
           "group": "navigation@7"
-        },
-        {
-          "command": "LambdaTreeView.UpdateAwsEndPoint",
-          "when": "view == LambdaTreeView",
-          "group": "other"
         }
       ],
       "view/item/context": [
@@ -166,39 +135,14 @@
           "group": "Filter"
         },
         {
-          "command": "LambdaTreeView.RemoveBucket",
-          "when": "view == LambdaTreeView && viewItem == Bucket",
-          "group": "Bucket"
+          "command": "LambdaTreeView.RemoveLambda",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
+          "group": "Lambda"
         },
         {
           "command": "LambdaTreeView.Goto",
-          "when": "view == LambdaTreeView && viewItem == Bucket",
-          "group": "Bucket"
-        },
-        {
-          "command": "LambdaTreeView.RemoveShortcut",
-          "when": "view == LambdaTreeView && viewItem == Shortcut",
-          "group": "Shortcut"
-        },
-        {
-          "command": "LambdaTreeView.AddShortcut",
-          "when": "view == LambdaTreeView && viewItem == Bucket",
-          "group": "Shortcut"
-        },
-        {
-          "command": "LambdaTreeView.CopyShortcut",
-          "when": "view == LambdaTreeView && viewItem == Shortcut",
-          "group": "Shortcut"
-        },
-        {
-          "command": "LambdaTreeView.ShowS3Explorer",
-          "when": "view == LambdaTreeView",
-          "group": "inline"
-        },
-        {
-          "command": "LambdaTreeView.ShowS3Search",
-          "when": "view == LambdaTreeView",
-          "group": "inline"
+          "when": "view == LambdaTreeView && viewItem == Lambda",
+          "group": "Lambda"
         }
       ]
     },

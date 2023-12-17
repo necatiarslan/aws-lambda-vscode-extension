@@ -8,12 +8,12 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 	private _onDidChangeTreeData: vscode.EventEmitter<LambdaTreeItem | undefined | void> = new vscode.EventEmitter<LambdaTreeItem | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<LambdaTreeItem | undefined | void> = this._onDidChangeTreeData.event;
 	
-	BucketNodeList: LambdaTreeItem[] = [];
+	LambdaNodeList: LambdaTreeItem[] = [];
 	ShortcutNodeList: LambdaTreeItem[] = [];
 
-	private BucketList: string[] = [];
+	private LambdaList: string[] = [];
 	private ShortcutList: [[string,string]] = [["???","???"]];
-	public ViewType:ViewType = ViewType.Bucket_Shortcut;
+	public ViewType:ViewType = ViewType.Lambda;
 
 	constructor() {
 		this.ShortcutList.splice(0,1);
@@ -23,17 +23,17 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		this._onDidChangeTreeData.fire();
 	}
 
-	public GetBucketList(){
-		return this.BucketList;
+	public GetLambdaList(){
+		return this.LambdaList;
 	}
 
 	public GetShortcutList(){
 		return this.ShortcutList;
 	}
 
-	public SetBucketList(BucketList: string[]){
-		this.BucketList = BucketList;
-		this.LoadBucketNodeList();
+	public SetLambdaList(LambdaList: string[]){
+		this.LambdaList = LambdaList;
+		this.LoadLambdaNodeList();
 	}
 
 	public SetShortcutList(ShortcutList: [[string,string]]){
@@ -41,18 +41,18 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		this.LoadShortcutNodeList();
 	}
 
-	AddBucket(Bucket:string){
-		if(this.BucketList.includes(Bucket)){ return; }
+	AddLambda(Lambda:string){
+		if(this.LambdaList.includes(Lambda)){ return; }
 
-		this.BucketList.push(Bucket);
-		this.LoadBucketNodeList();
+		this.LambdaList.push(Lambda);
+		this.LoadLambdaNodeList();
 		this.Refresh();
 	}
 
-	RemoveBucket(Bucket:string){
+	RemoveLambda(Lambda:string){
 		for(let i = 0; i < this.ShortcutList.length; i++)
 		{
-			if(this.ShortcutList[i][0] === Bucket)
+			if(this.ShortcutList[i][0] === Lambda)
 			{
 				this.ShortcutList.splice(i, 1);
 				i--;
@@ -60,91 +60,27 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		}
 		this.LoadShortcutNodeList();
 
-		for(let i = 0; i < this.BucketList.length; i++)
+		for(let i = 0; i < this.LambdaList.length; i++)
 		{
-			if(this.BucketList[i] === Bucket)
+			if(this.LambdaList[i] === Lambda)
 			{
-				this.BucketList.splice(i, 1);
+				this.LambdaList.splice(i, 1);
 				i--;
 			}
 		}
-		this.LoadBucketNodeList();
+		this.LoadLambdaNodeList();
 		this.Refresh();
 	}
 
-	RemoveAllShortcuts(Bucket:string){
-		for(let i = 0; i < this.ShortcutList.length; i++)
-		{
-			if(this.ShortcutList[i][0] === Bucket)
-			{
-				this.ShortcutList.splice(i, 1);
-				i--;
-			}
-		}
-		this.LoadShortcutNodeList();
-		this.Refresh();
-	}
-
-	DoesShortcutExists(Bucket:string, Key:string):boolean{
-		if(!Bucket || !Key) { return false; }
-
-		for(var ls of this.ShortcutList)
-		{
-			if(ls[0] === Bucket && ls[1] === Key)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	AddShortcut(Bucket:string, Key:string){
-		if(!Bucket || !Key) { return; }
+	LoadLambdaNodeList(){
+		this.LambdaNodeList = [];
 		
-		if(this.DoesShortcutExists(Bucket, Key))
+		for(var lambda of this.LambdaList)
 		{
-			return;
-		}
-
-		this.ShortcutList.push([Bucket, Key]);
-		this.LoadShortcutNodeList();
-		this.Refresh();
-	}
-
-	RemoveShortcut(Bucket:string, Shortcut:string){
-		for(let i = 0; i < this.ShortcutList.length; i++)
-		{
-			if(this.ShortcutList[i][0] === Bucket && this.ShortcutList[i][1] === Shortcut)
-			{
-				this.ShortcutList.splice(i, 1);
-				i--;
-			}
-		}
-		this.LoadShortcutNodeList();
-		this.Refresh();
-	}
-
-	UpdateShortcut(Bucket:string, Shortcut:string, NewShortcut:string){
-		for(let i = 0; i < this.ShortcutList.length; i++)
-		{
-			if(this.ShortcutList[i][0] === Bucket && this.ShortcutList[i][1] === Shortcut)
-			{
-				this.ShortcutList[i][1] = NewShortcut
-			}
-		}
-		this.LoadShortcutNodeList();
-		this.Refresh();
-	}
-
-	LoadBucketNodeList(){
-		this.BucketNodeList = [];
-		
-		for(var bucket of this.BucketList)
-		{
-			let treeItem = new LambdaTreeItem(bucket, TreeItemType.Bucket);
+			let treeItem = new LambdaTreeItem(lambda, TreeItemType.Lambda);
 			treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-			treeItem.Bucket = bucket;
-			this.BucketNodeList.push(treeItem);
+			treeItem.Lambda = lambda;
+			this.LambdaNodeList.push(treeItem);
 		}
 	}
 
@@ -154,7 +90,7 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		for(var lg of this.ShortcutList)
 		{
 			let treeItem = new LambdaTreeItem(lg[1], TreeItemType.Shortcut);
-			treeItem.Bucket = lg[0];
+			treeItem.Lambda = lg[0];
 			treeItem.Shortcut = lg[1];
 			this.ShortcutNodeList.push(treeItem);
 		}
@@ -162,11 +98,6 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 
 	getChildren(node: LambdaTreeItem): Thenable<LambdaTreeItem[]> {
 		let result:LambdaTreeItem[] = [];
-
-		if(this.ViewType === ViewType.Bucket_Shortcut)
-		{
-			result = this.GetNodesBucketShortcut(node);
-		}
 
 		return Promise.resolve(result);
 	}
@@ -178,23 +109,23 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		return result;
 	}
 
-	GetNodesBucketShortcut(node: LambdaTreeItem):LambdaTreeItem[]
+	GetNodesLambdaShortcut(node: LambdaTreeItem):LambdaTreeItem[]
 	{
 		let result:LambdaTreeItem[] = [];
 		
 		if (!node) {
-			result = this.GetBucketNodes();
+			result = this.GetLambdaNodes();
 		}
-		else if(node.TreeItemType === TreeItemType.Bucket){
-			result = this.GetShortcutNodesParentBucket(node);
+		else if(node.TreeItemType === TreeItemType.Lambda){
+			result = this.GetShortcutNodesParentLambda(node);
 		}
 
 		return result;
 	}
 
-	GetBucketNodes(): LambdaTreeItem[]{
+	GetLambdaNodes(): LambdaTreeItem[]{
 		var result: LambdaTreeItem[] = [];
-		for (var node of this.BucketNodeList) {
+		for (var node of this.LambdaNodeList) {
 			if (LambdaTreeView.Current && LambdaTreeView.Current.FilterString && !node.IsFilterStringMatch(LambdaTreeView.Current.FilterString)) { continue; }
 			if (LambdaTreeView.Current && LambdaTreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
 			if (LambdaTreeView.Current && !LambdaTreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
@@ -204,18 +135,18 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		return result;
 	}
 
-	GetShortcutNodesParentBucket(BucketNode:LambdaTreeItem): LambdaTreeItem[]{
+	GetShortcutNodesParentLambda(LambdaNode:LambdaTreeItem): LambdaTreeItem[]{
 		var result: LambdaTreeItem[] = [];
 		for (var node of this.ShortcutNodeList) {
-			if(!(node.Bucket === BucketNode.Bucket)) { continue; }
+			if(!(node.Lambda === LambdaNode.Lambda)) { continue; }
 			if (LambdaTreeView.Current && LambdaTreeView.Current.FilterString && !node.IsFilterStringMatch(LambdaTreeView.Current.FilterString)) { continue; }
 			if (LambdaTreeView.Current && LambdaTreeView.Current.isShowOnlyFavorite && !(node.IsFav || node.IsAnyChidrenFav())) { continue; }
 			if (LambdaTreeView.Current && !LambdaTreeView.Current.isShowHiddenNodes && (node.IsHidden)) { continue; }
 
-			node.Parent = BucketNode;
-			if(BucketNode.Children.indexOf(node) === -1)
+			node.Parent = LambdaNode;
+			if(LambdaNode.Children.indexOf(node) === -1)
 			{
-				BucketNode.Children.push(node);
+				LambdaNode.Children.push(node);
 			}
 			result.push(node);
 		}
@@ -240,5 +171,5 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 }
 
 export enum ViewType{
-	Bucket_Shortcut = 1
+	Lambda = 1
 }

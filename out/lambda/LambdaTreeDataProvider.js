@@ -9,129 +9,75 @@ class LambdaTreeDataProvider {
     constructor() {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
-        this.BucketNodeList = [];
+        this.LambdaNodeList = [];
         this.ShortcutNodeList = [];
-        this.BucketList = [];
+        this.LambdaList = [];
         this.ShortcutList = [["???", "???"]];
-        this.ViewType = ViewType.Bucket_Shortcut;
+        this.ViewType = ViewType.Lambda;
         this.ShortcutList.splice(0, 1);
     }
     Refresh() {
         this._onDidChangeTreeData.fire();
     }
-    GetBucketList() {
-        return this.BucketList;
+    GetLambdaList() {
+        return this.LambdaList;
     }
     GetShortcutList() {
         return this.ShortcutList;
     }
-    SetBucketList(BucketList) {
-        this.BucketList = BucketList;
-        this.LoadBucketNodeList();
+    SetLambdaList(LambdaList) {
+        this.LambdaList = LambdaList;
+        this.LoadLambdaNodeList();
     }
     SetShortcutList(ShortcutList) {
         this.ShortcutList = ShortcutList;
         this.LoadShortcutNodeList();
     }
-    AddBucket(Bucket) {
-        if (this.BucketList.includes(Bucket)) {
+    AddLambda(Lambda) {
+        if (this.LambdaList.includes(Lambda)) {
             return;
         }
-        this.BucketList.push(Bucket);
-        this.LoadBucketNodeList();
+        this.LambdaList.push(Lambda);
+        this.LoadLambdaNodeList();
         this.Refresh();
     }
-    RemoveBucket(Bucket) {
+    RemoveLambda(Lambda) {
         for (let i = 0; i < this.ShortcutList.length; i++) {
-            if (this.ShortcutList[i][0] === Bucket) {
+            if (this.ShortcutList[i][0] === Lambda) {
                 this.ShortcutList.splice(i, 1);
                 i--;
             }
         }
         this.LoadShortcutNodeList();
-        for (let i = 0; i < this.BucketList.length; i++) {
-            if (this.BucketList[i] === Bucket) {
-                this.BucketList.splice(i, 1);
+        for (let i = 0; i < this.LambdaList.length; i++) {
+            if (this.LambdaList[i] === Lambda) {
+                this.LambdaList.splice(i, 1);
                 i--;
             }
         }
-        this.LoadBucketNodeList();
+        this.LoadLambdaNodeList();
         this.Refresh();
     }
-    RemoveAllShortcuts(Bucket) {
-        for (let i = 0; i < this.ShortcutList.length; i++) {
-            if (this.ShortcutList[i][0] === Bucket) {
-                this.ShortcutList.splice(i, 1);
-                i--;
-            }
-        }
-        this.LoadShortcutNodeList();
-        this.Refresh();
-    }
-    DoesShortcutExists(Bucket, Key) {
-        if (!Bucket || !Key) {
-            return false;
-        }
-        for (var ls of this.ShortcutList) {
-            if (ls[0] === Bucket && ls[1] === Key) {
-                return true;
-            }
-        }
-        return false;
-    }
-    AddShortcut(Bucket, Key) {
-        if (!Bucket || !Key) {
-            return;
-        }
-        if (this.DoesShortcutExists(Bucket, Key)) {
-            return;
-        }
-        this.ShortcutList.push([Bucket, Key]);
-        this.LoadShortcutNodeList();
-        this.Refresh();
-    }
-    RemoveShortcut(Bucket, Shortcut) {
-        for (let i = 0; i < this.ShortcutList.length; i++) {
-            if (this.ShortcutList[i][0] === Bucket && this.ShortcutList[i][1] === Shortcut) {
-                this.ShortcutList.splice(i, 1);
-                i--;
-            }
-        }
-        this.LoadShortcutNodeList();
-        this.Refresh();
-    }
-    UpdateShortcut(Bucket, Shortcut, NewShortcut) {
-        for (let i = 0; i < this.ShortcutList.length; i++) {
-            if (this.ShortcutList[i][0] === Bucket && this.ShortcutList[i][1] === Shortcut) {
-                this.ShortcutList[i][1] = NewShortcut;
-            }
-        }
-        this.LoadShortcutNodeList();
-        this.Refresh();
-    }
-    LoadBucketNodeList() {
-        this.BucketNodeList = [];
-        for (var bucket of this.BucketList) {
-            let treeItem = new LambdaTreeItem_1.LambdaTreeItem(bucket, LambdaTreeItem_1.TreeItemType.Bucket);
+    LoadLambdaNodeList() {
+        this.LambdaNodeList = [];
+        for (var lambda of this.LambdaList) {
+            let treeItem = new LambdaTreeItem_1.LambdaTreeItem(lambda, LambdaTreeItem_1.TreeItemType.Lambda);
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-            treeItem.Bucket = bucket;
-            this.BucketNodeList.push(treeItem);
+            treeItem.Lambda = lambda;
+            this.LambdaNodeList.push(treeItem);
         }
     }
     LoadShortcutNodeList() {
         this.ShortcutNodeList = [];
         for (var lg of this.ShortcutList) {
             let treeItem = new LambdaTreeItem_1.LambdaTreeItem(lg[1], LambdaTreeItem_1.TreeItemType.Shortcut);
-            treeItem.Bucket = lg[0];
+            treeItem.Lambda = lg[0];
             treeItem.Shortcut = lg[1];
             this.ShortcutNodeList.push(treeItem);
         }
     }
     getChildren(node) {
         let result = [];
-        if (this.ViewType === ViewType.Bucket_Shortcut) {
-            result = this.GetNodesBucketShortcut(node);
-        }
         return Promise.resolve(result);
     }
     GetNodesShortcut(node) {
@@ -139,19 +85,19 @@ class LambdaTreeDataProvider {
         result = this.GetShortcutNodes();
         return result;
     }
-    GetNodesBucketShortcut(node) {
+    GetNodesLambdaShortcut(node) {
         let result = [];
         if (!node) {
-            result = this.GetBucketNodes();
+            result = this.GetLambdaNodes();
         }
-        else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.Bucket) {
-            result = this.GetShortcutNodesParentBucket(node);
+        else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.Lambda) {
+            result = this.GetShortcutNodesParentLambda(node);
         }
         return result;
     }
-    GetBucketNodes() {
+    GetLambdaNodes() {
         var result = [];
-        for (var node of this.BucketNodeList) {
+        for (var node of this.LambdaNodeList) {
             if (LambdaTreeView_1.LambdaTreeView.Current && LambdaTreeView_1.LambdaTreeView.Current.FilterString && !node.IsFilterStringMatch(LambdaTreeView_1.LambdaTreeView.Current.FilterString)) {
                 continue;
             }
@@ -165,10 +111,10 @@ class LambdaTreeDataProvider {
         }
         return result;
     }
-    GetShortcutNodesParentBucket(BucketNode) {
+    GetShortcutNodesParentLambda(LambdaNode) {
         var result = [];
         for (var node of this.ShortcutNodeList) {
-            if (!(node.Bucket === BucketNode.Bucket)) {
+            if (!(node.Lambda === LambdaNode.Lambda)) {
                 continue;
             }
             if (LambdaTreeView_1.LambdaTreeView.Current && LambdaTreeView_1.LambdaTreeView.Current.FilterString && !node.IsFilterStringMatch(LambdaTreeView_1.LambdaTreeView.Current.FilterString)) {
@@ -180,9 +126,9 @@ class LambdaTreeDataProvider {
             if (LambdaTreeView_1.LambdaTreeView.Current && !LambdaTreeView_1.LambdaTreeView.Current.isShowHiddenNodes && (node.IsHidden)) {
                 continue;
             }
-            node.Parent = BucketNode;
-            if (BucketNode.Children.indexOf(node) === -1) {
-                BucketNode.Children.push(node);
+            node.Parent = LambdaNode;
+            if (LambdaNode.Children.indexOf(node) === -1) {
+                LambdaNode.Children.push(node);
             }
             result.push(node);
         }
@@ -211,6 +157,6 @@ class LambdaTreeDataProvider {
 exports.LambdaTreeDataProvider = LambdaTreeDataProvider;
 var ViewType;
 (function (ViewType) {
-    ViewType[ViewType["Bucket_Shortcut"] = 1] = "Bucket_Shortcut";
+    ViewType[ViewType["Lambda"] = 1] = "Lambda";
 })(ViewType = exports.ViewType || (exports.ViewType = {}));
 //# sourceMappingURL=LambdaTreeDataProvider.js.map

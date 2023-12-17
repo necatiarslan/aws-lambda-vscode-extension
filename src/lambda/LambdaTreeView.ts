@@ -134,7 +134,7 @@ export class LambdaTreeView {
 			this.context.globalState.update('FilterString', this.FilterString);
 			this.context.globalState.update('ShowOnlyFavorite', this.isShowOnlyFavorite);
 			this.context.globalState.update('ShowHiddenNodes', this.isShowHiddenNodes);
-			this.context.globalState.update('BucketList', this.treeDataProvider.GetBucketList());
+			this.context.globalState.update('LambdaList', this.treeDataProvider.GetLambdaList());
 			this.context.globalState.update('ShortcutList', this.treeDataProvider.GetShortcutList());
 			this.context.globalState.update('ViewType', this.treeDataProvider.ViewType);
 			this.context.globalState.update('AwsEndPoint', this.AwsEndPoint);
@@ -165,10 +165,10 @@ export class LambdaTreeView {
 			let ShowHiddenNodesTemp: boolean | undefined = this.context.globalState.get('ShowHiddenNodes');
 			if (ShowHiddenNodesTemp) { this.isShowHiddenNodes = ShowHiddenNodesTemp; }
 
-			let BucketListTemp:string[] | undefined  = this.context.globalState.get('BucketList');
-			if(BucketListTemp)
+			let LambdaListTemp:string[] | undefined  = this.context.globalState.get('LambdaList');
+			if(LambdaListTemp)
 			{
-				this.treeDataProvider.SetBucketList(BucketListTemp);
+				this.treeDataProvider.SetLambdaList(LambdaListTemp);
 			}
 
 			let ShortcutListTemp:[[string,string]] | undefined  = this.context.globalState.get('ShortcutList');
@@ -215,40 +215,40 @@ export class LambdaTreeView {
 		return variable ? "✓" : "𐄂";
 	}
 
-	async AddBucket(){
-		ui.logToOutput('LambdaTreeView.AddBucket Started');
+	async AddLambda(){
+		ui.logToOutput('LambdaTreeView.AddLambda Started');
 
-		let selectedBucketName = await vscode.window.showInputBox({ placeHolder: 'Enter Bucket Name / Search Text' });
-		if(selectedBucketName===undefined){ return; }
+		let selectedLambdaName = await vscode.window.showInputBox({ placeHolder: 'Enter Lambda Name / Search Text' });
+		if(selectedLambdaName===undefined){ return; }
 
-		var resultBucket = await api.GetBucketList(selectedBucketName);
-		if(!resultBucket.isSuccessful){ return; }
+		var resultLambda = await api.GetBucketList(selectedLambdaName);
+		if(!resultLambda.isSuccessful){ return; }
 
-		let selectedBucketList = await vscode.window.showQuickPick(resultBucket.result, {canPickMany:true, placeHolder: 'Select Bucket(s)'});
-		if(!selectedBucketList || selectedBucketList.length===0){ return; }
+		let selectedLambdaList = await vscode.window.showQuickPick(resultLambda.result, {canPickMany:true, placeHolder: 'Select Lambda(s)'});
+		if(!selectedLambdaList || selectedLambdaList.length===0){ return; }
 
-		for(var selectedBucket of selectedBucketList)
+		for(var selectedLambda of selectedLambdaList)
 		{
-			this.treeDataProvider.AddBucket(selectedBucket);
+			this.treeDataProvider.AddLambda(selectedLambda);
 		}
 		this.SaveState();
 	}
 
-	async RemoveBucket(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.RemoveBucket Started');
+	async RemoveLambda(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.RemoveLambda Started');
 		
-		if(node.TreeItemType !== TreeItemType.Bucket) { return;}
-		if(!node.Bucket) { return; }
+		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
+		if(!node.Lambda) { return; }
 
-		this.treeDataProvider.RemoveBucket(node.Bucket);		
+		this.treeDataProvider.RemoveLambda(node.Lambda);		
 		this.SaveState();
 	}
 
 	async Goto(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.Goto Started');
 		
-		if(node.TreeItemType !== TreeItemType.Bucket) { return;}
-		if(!node.Bucket) { return; }
+		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
+		if(!node.Lambda) { return; }
 
 		let shortcut = await vscode.window.showInputBox({ placeHolder: 'Enter a Folder/File Key' });
 		if(shortcut===undefined){ return; }
@@ -256,92 +256,6 @@ export class LambdaTreeView {
 		
 	}
 
-	async AddOrRemoveShortcut(Bucket:string, Key:string) {
-		ui.logToOutput('LambdaTreeView.AddOrRemoveShortcut Started');
-		if(!Bucket || !Key) { return; }
-		
-		if(this.treeDataProvider.DoesShortcutExists(Bucket, Key))
-		{
-			this.treeDataProvider.RemoveShortcut(Bucket, Key);
-		}
-		else
-		{
-			this.treeDataProvider.AddShortcut(Bucket, Key);
-		}
-		
-		this.SaveState();
-	}
-
-	async RemoveShortcutByKey(Bucket:string, Key:string) {
-		ui.logToOutput('LambdaTreeView.RemoveShortcutByKey Started');
-		if(!Bucket || !Key) { return; }
-		
-		if(this.treeDataProvider.DoesShortcutExists(Bucket, Key))
-		{
-			this.treeDataProvider.RemoveShortcut(Bucket, Key);
-			this.SaveState();
-		}
-	}
-
-	async UpdateShortcutByKey(Bucket:string, Key:string, NewKey:string) {
-		ui.logToOutput('LambdaTreeView.RemoveShortcutByKey Started');
-		if(!Bucket || !Key) { return; }
-		
-		if(this.treeDataProvider.DoesShortcutExists(Bucket, Key))
-		{
-			this.treeDataProvider.UpdateShortcut(Bucket, Key, NewKey);
-			this.SaveState();
-		}
-	}
-
-	DoesShortcutExists(Bucket:string, Key:string|undefined):boolean {
-		if(!Key){return false;}
-		return this.treeDataProvider.DoesShortcutExists(Bucket, Key);
-	}
-
-	async RemoveShortcut(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.RemoveShortcut Started');
-		if(node.TreeItemType !== TreeItemType.Shortcut) { return;}
-		if(!node.Bucket || !node.Shortcut) { return; }
-		
-		this.treeDataProvider.RemoveShortcut(node.Bucket, node.Shortcut);
-		
-		this.SaveState();
-	}
-
-	async CopyShortcut(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.CopyShortcut Started');
-		if(node.TreeItemType !== TreeItemType.Shortcut) { return;}
-		if(!node.Bucket || !node.Shortcut) { return; }
-		
-		vscode.env.clipboard.writeText(node.Shortcut)
-	}
-
-	async AddShortcut(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.AddShortcut Started');
-		if(!node.Bucket) { return; }
-		
-		let bucket = node.Bucket
-
-		let shortcut = await vscode.window.showInputBox({ placeHolder: 'Enter a Folder/File Key' });
-		if(shortcut===undefined){ return; }
-		
-		this.AddOrRemoveShortcut(bucket, shortcut)
-	}
-
-	async ShowS3Explorer(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.ShowS3Explorer Started');
-		
-
-		
-	}
-
-	async ShowS3Search(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.ShowS3Search Started');
-		
-
-		
-	}
 
 	async SelectAwsProfile(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');

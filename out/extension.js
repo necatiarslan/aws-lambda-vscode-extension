@@ -31,29 +31,14 @@ function activate(context) {
     vscode.commands.registerCommand('LambdaTreeView.UnHideNode', (node) => {
         treeView.UnHideNode(node);
     });
-    vscode.commands.registerCommand('LambdaTreeView.AddBucket', () => {
-        treeView.AddBucket();
+    vscode.commands.registerCommand('LambdaTreeView.AddLambda', () => {
+        treeView.AddLambda();
     });
-    vscode.commands.registerCommand('LambdaTreeView.RemoveBucket', (node) => {
-        treeView.RemoveBucket(node);
+    vscode.commands.registerCommand('LambdaTreeView.RemoveLambda', (node) => {
+        treeView.RemoveLambda(node);
     });
     vscode.commands.registerCommand('LambdaTreeView.Goto', (node) => {
         treeView.Goto(node);
-    });
-    vscode.commands.registerCommand('LambdaTreeView.RemoveShortcut', (node) => {
-        treeView.RemoveShortcut(node);
-    });
-    vscode.commands.registerCommand('LambdaTreeView.AddShortcut', (node) => {
-        treeView.AddShortcut(node);
-    });
-    vscode.commands.registerCommand('LambdaTreeView.CopyShortcut', (node) => {
-        treeView.CopyShortcut(node);
-    });
-    vscode.commands.registerCommand('LambdaTreeView.ShowS3Explorer', (node) => {
-        treeView.ShowS3Explorer(node);
-    });
-    vscode.commands.registerCommand('LambdaTreeView.ShowS3Search', (node) => {
-        treeView.ShowS3Search(node);
     });
     vscode.commands.registerCommand('LambdaTreeView.SelectAwsProfile', (node) => {
         treeView.SelectAwsProfile(node);

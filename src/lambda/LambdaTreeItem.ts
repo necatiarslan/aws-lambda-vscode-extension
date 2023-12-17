@@ -5,7 +5,7 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public IsFav: boolean = false;
 	public TreeItemType:TreeItemType;
 	public Text:string;
-	public Bucket:string | undefined;
+	public Lambda:string | undefined;
 	public Shortcut:string | undefined;
 	public Parent:LambdaTreeItem | undefined;
 	public Children:LambdaTreeItem[] = [];
@@ -20,10 +20,10 @@ export class LambdaTreeItem extends vscode.TreeItem {
 
 	public refreshUI() {
 
-		if(this.TreeItemType === TreeItemType.Bucket)
+		if(this.TreeItemType === TreeItemType.Lambda)
 		{
 			this.iconPath = new vscode.ThemeIcon('package');
-			this.contextValue = "Bucket"
+			this.contextValue = "Lambda"
 		}
 		else if(this.TreeItemType === TreeItemType.Shortcut)
 		{
@@ -89,6 +89,6 @@ export class LambdaTreeItem extends vscode.TreeItem {
 }
 
 export enum TreeItemType{
-	Bucket = 1,
+	Lambda = 1,
 	Shortcut = 2,
 }

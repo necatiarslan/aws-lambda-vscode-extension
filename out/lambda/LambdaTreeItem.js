@@ -14,9 +14,9 @@ class LambdaTreeItem extends vscode.TreeItem {
         this.refreshUI();
     }
     refreshUI() {
-        if (this.TreeItemType === TreeItemType.Bucket) {
+        if (this.TreeItemType === TreeItemType.Lambda) {
             this.iconPath = new vscode.ThemeIcon('package');
-            this.contextValue = "Bucket";
+            this.contextValue = "Lambda";
         }
         else if (this.TreeItemType === TreeItemType.Shortcut) {
             this.iconPath = new vscode.ThemeIcon('file-symlink-directory');
@@ -65,7 +65,7 @@ class LambdaTreeItem extends vscode.TreeItem {
 exports.LambdaTreeItem = LambdaTreeItem;
 var TreeItemType;
 (function (TreeItemType) {
-    TreeItemType[TreeItemType["Bucket"] = 1] = "Bucket";
+    TreeItemType[TreeItemType["Lambda"] = 1] = "Lambda";
     TreeItemType[TreeItemType["Shortcut"] = 2] = "Shortcut";
 })(TreeItemType = exports.TreeItemType || (exports.TreeItemType = {}));
 //# sourceMappingURL=LambdaTreeItem.js.map
