@@ -1,7 +1,7 @@
 {
   "name": "aws-lambda-vscode-extension",
   "displayName": "Aws Lambda",
-  "description": "Browse Your AWS S3 Buckets, Upload, Download, Delete Files",
+  "description": "Trigger & Monitor your Aws Lambda Functions",
   "version": "1.0.0",
   "publisher": "NecatiARSLAN",
   "repository": {
