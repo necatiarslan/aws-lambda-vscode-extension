@@ -109,7 +109,6 @@ class LambdaTreeView {
             this.context.globalState.update('ShowOnlyFavorite', this.isShowOnlyFavorite);
             this.context.globalState.update('ShowHiddenNodes', this.isShowHiddenNodes);
             this.context.globalState.update('LambdaList', this.treeDataProvider.GetLambdaList());
-            this.context.globalState.update('ShortcutList', this.treeDataProvider.GetShortcutList());
             this.context.globalState.update('ViewType', this.treeDataProvider.ViewType);
             this.context.globalState.update('AwsEndPoint', this.AwsEndPoint);
             ui.logToOutput("LambdaTreeView.saveState Successfull");
@@ -140,10 +139,6 @@ class LambdaTreeView {
             let LambdaListTemp = this.context.globalState.get('LambdaList');
             if (LambdaListTemp) {
                 this.treeDataProvider.SetLambdaList(LambdaListTemp);
-            }
-            let ShortcutListTemp = this.context.globalState.get('ShortcutList');
-            if (ShortcutListTemp) {
-                this.treeDataProvider.SetShortcutList(ShortcutListTemp);
             }
             let ViewTypeTemp = this.context.globalState.get('ViewType');
             if (ViewTypeTemp) {

@@ -135,7 +135,6 @@ export class LambdaTreeView {
 			this.context.globalState.update('ShowOnlyFavorite', this.isShowOnlyFavorite);
 			this.context.globalState.update('ShowHiddenNodes', this.isShowHiddenNodes);
 			this.context.globalState.update('LambdaList', this.treeDataProvider.GetLambdaList());
-			this.context.globalState.update('ShortcutList', this.treeDataProvider.GetShortcutList());
 			this.context.globalState.update('ViewType', this.treeDataProvider.ViewType);
 			this.context.globalState.update('AwsEndPoint', this.AwsEndPoint);
 
@@ -169,12 +168,6 @@ export class LambdaTreeView {
 			if(LambdaListTemp)
 			{
 				this.treeDataProvider.SetLambdaList(LambdaListTemp);
-			}
-
-			let ShortcutListTemp:[[string,string]] | undefined  = this.context.globalState.get('ShortcutList');
-			if(ShortcutListTemp)
-			{
-				this.treeDataProvider.SetShortcutList(ShortcutListTemp);
 			}
 
 			let ViewTypeTemp:number | undefined = this.context.globalState.get('ViewType');

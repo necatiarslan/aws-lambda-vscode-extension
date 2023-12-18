@@ -78,13 +78,36 @@ function GetEC2Client() {
     const ec2 = new AWS.EC2({ region: 'us-east-1', credentials: credentials });
     return ec2;
 }
+async function getAwsUserInfo() {
+    let result = new MethodResult_1.MethodResult();
+    const iam = GetIAMClient();
+    try {
+        const user = await iam.getUser().promise();
+        result.result["UserId"] = user.User?.UserId;
+        result.result["UserName"] = user.User?.UserName;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage('api.getAwsUserInfo Error !!!', error);
+        ui.logToOutput("api.getAwsUserInfo Error !!!", error);
+        return result;
+    }
+}
 async function GetLambdaList(Region, LambdaName) {
     let result = new MethodResult_1.MethodResult();
     result.result = [];
     try {
         const lambda = GetLambdaClient(Region);
         const functionsList = await lambda.listFunctions().promise();
-        const matchingFunctions = functionsList.Functions?.filter((func) => func.FunctionName === LambdaName || LambdaName === undefined);
+        let matchingFunctions;
+        if (LambdaName) {
+            matchingFunctions = functionsList.Functions?.filter((func) => func.FunctionName?.includes(LambdaName) || LambdaName.length === 0);
+        }
+        else {
+            matchingFunctions = functionsList.Functions;
+        }
         if (matchingFunctions && matchingFunctions.length > 0) {
             matchingFunctions.forEach((func) => {
                 if (func.FunctionName)
