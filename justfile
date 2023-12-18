@@ -14,3 +14,7 @@ npm-doctor:
 
 npm-outdated:
     npm outdated
+
+npm-update:
+    npm update
+
