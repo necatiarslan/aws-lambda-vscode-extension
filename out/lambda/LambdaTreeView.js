@@ -183,7 +183,11 @@ class LambdaTreeView {
             return;
         }
         for (var selectedLambda of selectedLambdaList) {
-            this.treeDataProvider.AddLambda(selectedLambda);
+            let LambdaBody = {
+                Lambda: selectedLambda,
+                Region: "us-east-1"
+            };
+            this.treeDataProvider.AddLambda(selectedLambda, LambdaBody);
         }
         this.SaveState();
     }

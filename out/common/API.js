@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.GetRegionList = exports.TestAwsConnection = exports.GetLambdaList = exports.IsEnvironmentCredentials = exports.IsSharedIniFileCredentials = void 0;
+exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.GetRegionList = exports.TestAwsConnection = exports.GetLambdaList = exports.GetCurrentAwsUserInfo = exports.IsEnvironmentCredentials = exports.IsSharedIniFileCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const AWS = require("aws-sdk");
 const ui = require("./UI");
@@ -78,7 +78,7 @@ function GetEC2Client() {
     const ec2 = new AWS.EC2({ region: 'us-east-1', credentials: credentials });
     return ec2;
 }
-async function getAwsUserInfo() {
+async function GetCurrentAwsUserInfo() {
     let result = new MethodResult_1.MethodResult();
     const iam = GetIAMClient();
     try {
@@ -95,6 +95,7 @@ async function getAwsUserInfo() {
         return result;
     }
 }
+exports.GetCurrentAwsUserInfo = GetCurrentAwsUserInfo;
 async function GetLambdaList(Region, LambdaName) {
     let result = new MethodResult_1.MethodResult();
     result.result = [];

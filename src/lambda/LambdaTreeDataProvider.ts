@@ -12,7 +12,7 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 
 	//FunctionName, FunctionArn, Runtime, AccountName, Region
 
-	private LambdaList: string[] = [];
+	private LambdaList: { [key: string]: { [key: string]: string } } = { };
 
 	public ViewType:ViewType = ViewType.Lambda;
 
@@ -28,27 +28,23 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		return this.LambdaList;
 	}
 
-	public SetLambdaList(LambdaList: string[]){
+	public SetLambdaList(LambdaList: {}){
 		this.LambdaList = LambdaList;
 		this.LoadLambdaNodeList();
 	}
 
-	AddLambda(Lambda:string){
-		if(this.LambdaList.includes(Lambda)){ return; }
+	AddLambda(Lambda:string, LambdaBody:{}){
+		if( Lambda in  this.LambdaList){ return; }
 
-		this.LambdaList.push(Lambda);
+		this.LambdaList[Lambda] = LambdaBody;
 		this.LoadLambdaNodeList();
 		this.Refresh();
 	}
 
 	RemoveLambda(Lambda:string){
-		for(let i = 0; i < this.LambdaList.length; i++)
+		if(Lambda in this.LambdaList)
 		{
-			if(this.LambdaList[i] === Lambda)
-			{
-				this.LambdaList.splice(i, 1);
-				i--;
-			}
+			delete this.LambdaList[Lambda];
 		}
 		this.LoadLambdaNodeList();
 		this.Refresh();
@@ -57,7 +53,7 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 	LoadLambdaNodeList(){
 		this.LambdaNodeList = [];
 		
-		for(var lambda of this.LambdaList)
+		for(var lambda in this.LambdaList)
 		{
 			let treeItem = new LambdaTreeItem(lambda, TreeItemType.Lambda);
 			//treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;

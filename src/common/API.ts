@@ -103,7 +103,7 @@ function GetEC2Client()
   return ec2;
 }
 
-async function getAwsUserInfo(): Promise<MethodResult<{ [key: string]: string }>> {
+export async function GetCurrentAwsUserInfo(): Promise<MethodResult<{ [key: string]: string }>> {
   let result:MethodResult<{ [key: string]: string }> = new MethodResult<{ [key: string]: string }>();
   const iam = GetIAMClient();
 

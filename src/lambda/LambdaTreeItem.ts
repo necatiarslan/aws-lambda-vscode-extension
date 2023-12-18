@@ -22,13 +22,8 @@ export class LambdaTreeItem extends vscode.TreeItem {
 
 		if(this.TreeItemType === TreeItemType.Lambda)
 		{
-			this.iconPath = new vscode.ThemeIcon('package');
+			this.iconPath = new vscode.ThemeIcon('server-process');
 			this.contextValue = "Lambda"
-		}
-		else if(this.TreeItemType === TreeItemType.Shortcut)
-		{
-			this.iconPath = new vscode.ThemeIcon('file-symlink-directory');
-			this.contextValue = "Shortcut"
 		}
 		else
 		{
@@ -90,5 +85,4 @@ export class LambdaTreeItem extends vscode.TreeItem {
 
 export enum TreeItemType{
 	Lambda = 1,
-	Shortcut = 2,
 }

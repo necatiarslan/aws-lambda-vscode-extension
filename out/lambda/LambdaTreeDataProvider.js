@@ -11,7 +11,7 @@ class LambdaTreeDataProvider {
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this.LambdaNodeList = [];
         //FunctionName, FunctionArn, Runtime, AccountName, Region
-        this.LambdaList = [];
+        this.LambdaList = {};
         this.ViewType = ViewType.Lambda;
     }
     Refresh() {
@@ -24,27 +24,24 @@ class LambdaTreeDataProvider {
         this.LambdaList = LambdaList;
         this.LoadLambdaNodeList();
     }
-    AddLambda(Lambda) {
-        if (this.LambdaList.includes(Lambda)) {
+    AddLambda(Lambda, LambdaBody) {
+        if (Lambda in this.LambdaList) {
             return;
         }
-        this.LambdaList.push(Lambda);
+        this.LambdaList[Lambda] = LambdaBody;
         this.LoadLambdaNodeList();
         this.Refresh();
     }
     RemoveLambda(Lambda) {
-        for (let i = 0; i < this.LambdaList.length; i++) {
-            if (this.LambdaList[i] === Lambda) {
-                this.LambdaList.splice(i, 1);
-                i--;
-            }
+        if (Lambda in this.LambdaList) {
+            delete this.LambdaList[Lambda];
         }
         this.LoadLambdaNodeList();
         this.Refresh();
     }
     LoadLambdaNodeList() {
         this.LambdaNodeList = [];
-        for (var lambda of this.LambdaList) {
+        for (var lambda in this.LambdaList) {
             let treeItem = new LambdaTreeItem_1.LambdaTreeItem(lambda, LambdaTreeItem_1.TreeItemType.Lambda);
             //treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.Lambda = lambda;

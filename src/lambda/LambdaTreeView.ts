@@ -164,7 +164,7 @@ export class LambdaTreeView {
 			let ShowHiddenNodesTemp: boolean | undefined = this.context.globalState.get('ShowHiddenNodes');
 			if (ShowHiddenNodesTemp) { this.isShowHiddenNodes = ShowHiddenNodesTemp; }
 
-			let LambdaListTemp:string[] | undefined  = this.context.globalState.get('LambdaList');
+			let LambdaListTemp:{ [key: string]: { [key: string]: string } } | undefined  = this.context.globalState.get('LambdaList');
 			if(LambdaListTemp)
 			{
 				this.treeDataProvider.SetLambdaList(LambdaListTemp);
@@ -222,7 +222,11 @@ export class LambdaTreeView {
 
 		for(var selectedLambda of selectedLambdaList)
 		{
-			this.treeDataProvider.AddLambda(selectedLambda);
+			let LambdaBody = {
+				Lambda: selectedLambda,
+				Region: "us-east-1"
+			}
+			this.treeDataProvider.AddLambda(selectedLambda, LambdaBody);
 		}
 		this.SaveState();
 	}
@@ -248,7 +252,6 @@ export class LambdaTreeView {
 		
 		
 	}
-
 
 	async SelectAwsProfile(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');
