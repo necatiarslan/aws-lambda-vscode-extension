@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.GetRegionList = exports.TestAwsConnection = exports.GetLambdaList = exports.GetCurrentAwsUserInfo = exports.IsEnvironmentCredentials = exports.IsSharedIniFileCredentials = void 0;
+exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.GetRegionList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambda = exports.TriggerLambda = exports.GetLambdaList = exports.GetCurrentAwsUserInfo = exports.IsEnvironmentCredentials = exports.IsSharedIniFileCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const AWS = require("aws-sdk");
 const ui = require("./UI");
@@ -10,6 +10,8 @@ const path_1 = require("path");
 const path_2 = require("path");
 const parseKnownFiles_1 = require("../aws-sdk/parseKnownFiles");
 const LambdaTreeView = require("../lambda/LambdaTreeView");
+const fs = require("fs");
+const archiver = require("archiver");
 function IsSharedIniFileCredentials(credentials = undefined) {
     if (credentials) {
         return GetCredentialProvider(credentials) === "SharedIniFileCredentials";
@@ -127,6 +129,101 @@ async function GetLambdaList(Region, LambdaName) {
     }
 }
 exports.GetLambdaList = GetLambdaList;
+async function TriggerLambda(Region, LambdaName, Parameters) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = GetLambdaClient(Region);
+        // Specify the parameters for invoking the Lambda function
+        const param = {
+            FunctionName: LambdaName,
+            InvocationType: 'RequestResponse',
+            Payload: JSON.stringify(Parameters)
+        };
+        const response = await lambda.invoke(param).promise();
+        result.result = response;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage('api.TriggerLambda Error !!!', error);
+        ui.logToOutput("api.TriggerLambda Error !!!", error);
+        return result;
+    }
+}
+exports.TriggerLambda = TriggerLambda;
+async function GetLambda(Region, LambdaName) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = GetLambdaClient(Region);
+        const param = {
+            FunctionName: LambdaName
+        };
+        const response = await lambda.getFunction(param).promise();
+        result.result = response;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage('api.GetLambda Error !!!', error);
+        ui.logToOutput("api.GetLambda Error !!!", error);
+        return result;
+    }
+}
+exports.GetLambda = GetLambda;
+async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = GetLambdaClient(Region);
+        let zipresponse = await ZipTextFile(CodeFilePath);
+        const zipFileContents = fs.readFileSync(zipresponse.result);
+        const lambdaParams = {
+            FunctionName: LambdaName,
+            ZipFile: zipFileContents
+        };
+        const response = await lambda.updateFunctionCode(lambdaParams).promise();
+        result.result = response;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage('api.GetLambda Error !!!', error);
+        ui.logToOutput("api.GetLambda Error !!!", error);
+        return result;
+    }
+}
+exports.UpdateLambdaCode = UpdateLambdaCode;
+async function ZipTextFile(inputFilePath, outputZipPath) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        if (!outputZipPath) {
+            outputZipPath = (0, path_2.dirname)(inputFilePath) + (0, path_2.basename)(inputFilePath) + ".zip";
+        }
+        const output = fs.createWriteStream(outputZipPath);
+        const archive = archiver('zip', {
+            zlib: { level: 9 } // Set compression level
+        });
+        archive.pipe(output);
+        archive.file(inputFilePath, { name: (0, path_2.basename)(inputFilePath) + (0, path_2.extname)(inputFilePath) });
+        archive.finalize();
+        result.result = outputZipPath;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage('api.ZipTextFile Error !!!', error);
+        ui.logToOutput("api.ZipTextFile Error !!!", error);
+        return result;
+    }
+}
+exports.ZipTextFile = ZipTextFile;
 async function TestAwsConnection() {
     let result = new MethodResult_1.MethodResult();
     try {

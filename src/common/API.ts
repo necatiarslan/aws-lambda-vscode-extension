@@ -4,10 +4,12 @@ import * as ui from "./UI";
 import { MethodResult } from './MethodResult';
 import { homedir } from "os";
 import { sep } from "path";
-import { join } from "path";
+import { join, basename, extname, dirname } from "path";
 import { parseKnownFiles, SourceProfileInit } from "../aws-sdk/parseKnownFiles";
 import { ParsedIniData } from "@aws-sdk/types";
 import * as LambdaTreeView from '../lambda/LambdaTreeView';
+import * as fs from 'fs';
+import * as archiver from 'archiver';
 
 export function IsSharedIniFileCredentials(credentials:any|undefined=undefined)
 {
@@ -160,6 +162,125 @@ export async function GetLambdaList(Region:string, LambdaName?:string): Promise<
     result.error = error;
     ui.showErrorMessage('api.GetLambdaList Error !!!', error);
     ui.logToOutput("api.GetLambdaList Error !!!", error); 
+    return result;
+  }
+}
+
+export async function TriggerLambda(Region:string, LambdaName:string, Parameters:{[key: string]: any}): Promise<MethodResult<AWS.Lambda.InvocationResponse>> {
+  let result:MethodResult<AWS.Lambda.InvocationResponse> = new MethodResult<AWS.Lambda.InvocationResponse>();
+
+  try 
+  {
+    const lambda = GetLambdaClient(Region);
+  
+    // Specify the parameters for invoking the Lambda function
+    const param: AWS.Lambda.InvocationRequest = {
+      FunctionName: LambdaName,
+      InvocationType: 'RequestResponse',
+      Payload: JSON.stringify(Parameters)
+    };
+    
+    const response = await lambda.invoke(param).promise();
+    result.result = response;
+    result.isSuccessful = true;
+    return result;
+  } 
+  catch (error:any) 
+  {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage('api.TriggerLambda Error !!!', error);
+    ui.logToOutput("api.TriggerLambda Error !!!", error); 
+    return result;
+  }
+}
+
+export async function GetLambda(Region:string, LambdaName:string): Promise<MethodResult<AWS.Lambda.GetFunctionResponse>> {
+  let result:MethodResult<AWS.Lambda.GetFunctionResponse> = new MethodResult<AWS.Lambda.GetFunctionResponse>();
+
+  try 
+  {
+    const lambda = GetLambdaClient(Region);
+  
+    const param: AWS.Lambda.GetFunctionRequest = {
+      FunctionName: LambdaName
+    };
+    
+    const response = await lambda.getFunction(param).promise();
+    result.result = response;
+    result.isSuccessful = true;
+    return result;
+  } 
+  catch (error:any) 
+  {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage('api.GetLambda Error !!!', error);
+    ui.logToOutput("api.GetLambda Error !!!", error); 
+    return result;
+  }
+}
+
+export async function UpdateLambdaCode(Region:string, LambdaName:string, CodeFilePath: string): Promise<MethodResult<AWS.Lambda.FunctionConfiguration>> {
+  let result:MethodResult<AWS.Lambda.FunctionConfiguration> = new MethodResult<AWS.Lambda.FunctionConfiguration>();
+
+  try 
+  {
+    const lambda = GetLambdaClient(Region);
+  
+    let zipresponse = await ZipTextFile(CodeFilePath);
+
+    const zipFileContents = fs.readFileSync(zipresponse.result);
+
+    const lambdaParams: AWS.Lambda.UpdateFunctionCodeRequest = {
+      FunctionName: LambdaName,
+      ZipFile: zipFileContents
+    };
+    
+    const response = await lambda.updateFunctionCode(lambdaParams).promise();
+    result.result = response;
+    result.isSuccessful = true;
+    return result;
+  } 
+  catch (error:any) 
+  {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage('api.GetLambda Error !!!', error);
+    ui.logToOutput("api.GetLambda Error !!!", error); 
+    return result;
+  }
+}
+
+export async function ZipTextFile(inputFilePath: string, outputZipPath?: string): Promise<MethodResult<string>> {
+  let result:MethodResult<string> = new MethodResult<string>();
+
+  try 
+  {
+    if(!outputZipPath)
+    {
+      outputZipPath = dirname(inputFilePath) + basename(inputFilePath) + ".zip"
+    }
+
+    const output = fs.createWriteStream(outputZipPath);
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Set compression level
+    });
+
+    archive.pipe(output);
+    archive.file(inputFilePath, { name: basename(inputFilePath)+extname(inputFilePath) });
+    archive.finalize();
+
+    result.result = outputZipPath;
+    result.isSuccessful = true;
+    return result;
+  } 
+  catch (error:any) 
+  {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage('api.ZipTextFile Error !!!', error);
+    ui.logToOutput("api.ZipTextFile Error !!!", error); 
     return result;
   }
 }

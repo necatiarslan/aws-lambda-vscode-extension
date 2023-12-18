@@ -8,3 +8,9 @@ build:
 
 publish:
     vsce publish
+
+npm-doctor:
+    npm doctor
+
+npm-outdated:
+    npm outdated
