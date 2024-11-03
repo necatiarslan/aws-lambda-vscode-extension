@@ -14,7 +14,11 @@ https://github.com/necatiarslan/aws-lambda-vscode-extension/issues/new
 
 
 ## Todo
-- 
+- (node:58629) NOTE: The AWS SDK for JavaScript (v2) is in maintenance mode.
+SDK releases are limited to address critical bug fixes and security issues only.
+Please migrate your code to use AWS SDK for JavaScript (v3).
+For more information, check the blog post at https://a.co/cUPnyil
+(Use `Code Helper (Plugin) --trace-warnings ...` to show where the warning was created)
 
 ## Nice To Have
 - 
