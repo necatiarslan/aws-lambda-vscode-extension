@@ -17,7 +17,7 @@
   ],
   "keywords": [
     "AWS",
-    "S3"
+    "Lambda"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
@@ -70,12 +70,22 @@
       },
       {
         "command": "LambdaTreeView.Goto",
-        "title": "Goto File/Folder"
+        "title": "Goto Aws Console"
       },
       {
         "command": "LambdaTreeView.SelectAwsProfile",
         "title": "Select Aws Profile",
         "icon": "$(account)"
+      },
+      {
+        "command": "LambdaTreeView.TriggerLambda",
+        "title": "Trigger",
+        "icon": "$(run)"
+      },
+      {
+        "command": "LambdaTreeView.LatestLogs",
+        "title": "Logs",
+        "icon": "$(output)"
       }
     ],
     "menus": {
@@ -141,7 +151,17 @@
           "command": "LambdaTreeView.Goto",
           "when": "view == LambdaTreeView && viewItem == Lambda",
           "group": "Lambda"
-        }
+        },
+        {
+					"command": "LambdaTreeView.TriggerLambda",
+					"when": "view == LambdaTreeView",
+					"group": "inline"
+				},
+				{
+					"command": "LambdaTreeView.LatestLogs",
+					"when": "view == LambdaTreeView",
+					"group": "inline"
+				}
       ]
     },
     "viewsContainers": {

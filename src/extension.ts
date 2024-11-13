@@ -60,6 +60,14 @@ export function activate(context: vscode.ExtensionContext) {
 		treeView.UpdateAwsEndPoint();
 	});
 
+	vscode.commands.registerCommand('LambdaTreeView.TriggerLambda', (node: LambdaTreeItem) => {
+		treeView.TriggerLambda(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.LatestLogs', (node: LambdaTreeItem) => {
+		treeView.LatestLogs(node);
+	});
+
 	ui.logToOutput('Aws Lambda Extension activation completed');
 }
 

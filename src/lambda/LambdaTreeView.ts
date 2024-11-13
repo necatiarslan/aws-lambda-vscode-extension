@@ -247,9 +247,28 @@ export class LambdaTreeView {
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
 		if(!node.Lambda) { return; }
 
-		let shortcut = await vscode.window.showInputBox({ placeHolder: 'Enter a Folder/File Key' });
-		if(shortcut===undefined){ return; }
+		//vscode.commands.executeCommand('vscode.openWith', vscode.Uri.parse('https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions/' + node.Lambda), "external");
+		ui.showInfoMessage("Work In Progress");
 		
+	}
+
+	async TriggerLambda(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.TriggerLambda Started');
+		
+		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
+		if(!node.Lambda) { return; }
+
+		ui.showInfoMessage("Work In Progress");
+		
+	}
+
+	async LatestLogs(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.LatestLogs Started');
+		
+		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
+		if(!node.Lambda) { return; }
+
+		ui.showInfoMessage("Work In Progress");
 		
 	}
 

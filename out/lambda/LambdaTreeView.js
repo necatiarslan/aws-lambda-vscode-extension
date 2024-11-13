@@ -210,10 +210,28 @@ class LambdaTreeView {
         if (!node.Lambda) {
             return;
         }
-        let shortcut = await vscode.window.showInputBox({ placeHolder: 'Enter a Folder/File Key' });
-        if (shortcut === undefined) {
+        //vscode.commands.executeCommand('vscode.openWith', vscode.Uri.parse('https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions/' + node.Lambda), "external");
+        ui.showInfoMessage("Work In Progress");
+    }
+    async TriggerLambda(node) {
+        ui.logToOutput('LambdaTreeView.TriggerLambda Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Lambda) {
             return;
         }
+        if (!node.Lambda) {
+            return;
+        }
+        ui.showInfoMessage("Work In Progress");
+    }
+    async LatestLogs(node) {
+        ui.logToOutput('LambdaTreeView.LatestLogs Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Lambda) {
+            return;
+        }
+        if (!node.Lambda) {
+            return;
+        }
+        ui.showInfoMessage("Work In Progress");
     }
     async SelectAwsProfile(node) {
         ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');
