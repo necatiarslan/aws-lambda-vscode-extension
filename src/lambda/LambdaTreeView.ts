@@ -252,6 +252,15 @@ export class LambdaTreeView {
 		
 	}
 
+	async LambdaView(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.LambdaView Started');
+		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
+		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
+
+		ui.showInfoMessage('Work In Progress');
+	}
+
 	async TriggerLambda(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.TriggerLambda Started');
 		

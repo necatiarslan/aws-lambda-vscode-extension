@@ -83,6 +83,11 @@
         "icon": "$(run)"
       },
       {
+        "command": "LambdaTreeView.LambdaView",
+        "title": "Lambda View",
+        "icon": "$(preview)"
+      },
+      {
         "command": "LambdaTreeView.LatestLogs",
         "title": "Logs",
         "icon": "$(output)"
@@ -167,6 +172,11 @@
           "group": "inline"
         },
         {
+          "command": "LambdaTreeView.LambdaView",
+          "when": "view == LambdaTreeView",
+          "group": "inline"
+        },
+        {
           "command": "LambdaTreeView.LatestLogs",
           "when": "view == LambdaTreeView",
           "group": "inline"
@@ -218,6 +228,7 @@
   },
   "dependencies": {
     "@aws-sdk/credential-provider-node": "^3.181.0",
+    "@vscode-elements/elements": "^1.11.0",
     "archiver": "^7.0.1",
     "aws-sdk": "^2.1271.0",
     "tmp": "^0.2.1"

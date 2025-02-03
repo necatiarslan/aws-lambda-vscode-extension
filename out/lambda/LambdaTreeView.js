@@ -216,6 +216,19 @@ class LambdaTreeView {
         //vscode.commands.executeCommand('vscode.openWith', vscode.Uri.parse('https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions/' + node.Lambda), "external");
         ui.showInfoMessage("Work In Progress");
     }
+    async LambdaView(node) {
+        ui.logToOutput('LambdaTreeView.LambdaView Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Lambda) {
+            return;
+        }
+        if (!node.Lambda) {
+            return;
+        }
+        if (!node.Region) {
+            return;
+        }
+        ui.showInfoMessage('Work In Progress');
+    }
     async TriggerLambda(node) {
         ui.logToOutput('LambdaTreeView.TriggerLambda Started');
         if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Lambda) {

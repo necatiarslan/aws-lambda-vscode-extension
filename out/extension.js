@@ -52,6 +52,9 @@ function activate(context) {
     vscode.commands.registerCommand('LambdaTreeView.LatestLogs', (node) => {
         treeView.LatestLogs(node);
     });
+    vscode.commands.registerCommand('LambdaTreeView.LambdaView', (node) => {
+        treeView.LambdaView(node);
+    });
     ui.logToOutput('Aws Lambda Extension activation completed');
 }
 exports.activate = activate;
