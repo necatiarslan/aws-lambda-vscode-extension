@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as AWS from "aws-sdk";
+import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
+import { fromIni } from "@aws-sdk/credential-provider-ini";
+import { LambdaClient, ListFunctionsCommand } from "@aws-sdk/client-lambda";
+import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
+import { IAMClient } from "@aws-sdk/client-iam";
 import * as ui from "./UI";
 import { MethodResult } from './MethodResult';
 import { homedir } from "os";
@@ -30,295 +34,306 @@ export async function GetCredentialProviderName(credentials:any|undefined=undefi
   return credentials.constructor.name;
 }
 
-export async function GetCredentials()
-{
-  let credentials:AWS.Credentials|undefined;
+export async function GetCredentials() {
+  let credentials;
 
-  try
-  {
-    const provider = new AWS.CredentialProviderChain();
-    credentials = await provider.resolvePromise();
-    
-    if(!credentials)
-    {
-      throw new Error("Aws credentials not found !!!")
+  try {
+    // Get credentials using the default provider chain.
+    const provider = fromNodeProviderChain();
+    credentials = await provider();
+
+    if (!credentials) {
+      throw new Error("Aws credentials not found !!!");
     }
-  
-    if(await IsSharedIniFileCredentials(credentials))
-    {
-      if(LambdaTreeView.LambdaTreeView.Current && LambdaTreeView.LambdaTreeView.Current?.AwsProfile != "default")
-      {
-        credentials = new AWS.SharedIniFileCredentials({ profile: LambdaTreeView.LambdaTreeView.Current?.AwsProfile });
+
+    // If the credentials come from a shared INI file and the current profile is not "default",
+    // re-resolve credentials using the specified profile.
+    if (await IsSharedIniFileCredentials(credentials)) {
+      if (
+        LambdaTreeView.LambdaTreeView.Current &&
+        LambdaTreeView.LambdaTreeView.Current.AwsProfile !== "default"
+      ) {
+        credentials = await fromIni({
+          profile: LambdaTreeView.LambdaTreeView.Current.AwsProfile,
+        })();
       }
     }
-    ui.logToOutput("Aws credentials provider " + await GetCredentialProviderName(credentials));
-    ui.logToOutput("Aws credentials AccessKeyId=" + credentials?.accessKeyId)
-    return credentials    
-  }
-  catch (error:any) 
-  {
-    ui.showErrorMessage('Aws Credentials Not Found !!!', error);
+
+    ui.logToOutput(
+      "Aws credentials provider " + (await GetCredentialProviderName(credentials))
+    );
+    ui.logToOutput("Aws credentials AccessKeyId=" + credentials.accessKeyId);
+    return credentials;
+  } catch (error: any) {
+    ui.showErrorMessage("Aws Credentials Not Found !!!", error);
     ui.logToOutput("GetCredentials Error !!!", error);
     return credentials;
   }
-
 }
 
-async function GetLambdaClient(Region:string) {
-  let lambda = undefined; 
-
-  let credentials = await GetCredentials();
-  lambda = new AWS.Lambda({region:Region, credentials: credentials, endpoint:LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint});
+async function GetLambdaClient(region: string) {
+  const credentials = await GetCredentials();
   
-  return lambda;
-}
-
-async function GetCloudWatchClient(Region:string) {
-  let cloudwatchlogs = undefined; 
-
-  let credentials = await GetCredentials();
-  cloudwatchlogs = new AWS.CloudWatchLogs({region:Region, credentials: credentials, endpoint:LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint});
+  const lambdaClient = new LambdaClient({
+    region,
+    credentials,
+    endpoint: LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint,
+  });
   
-  return cloudwatchlogs;
+  return lambdaClient;
 }
 
-async function GetIAMClient()
-{
-  let credentials = await GetCredentials();
-  const iam = new AWS.IAM({credentials:credentials});
-  return iam;
+async function GetCloudWatchClient(region: string) {
+  const credentials = await GetCredentials();
+  const cloudwatchLogsClient = new CloudWatchLogsClient({
+    region,
+    credentials,
+    endpoint: LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint,
+  });
+  
+  return cloudwatchLogsClient;
 }
 
-async function GetEC2Client()
-{
-  let credentials = await GetCredentials();
-  const ec2 = new AWS.EC2({region: 'us-east-1', credentials:credentials});
-  return ec2;
+async function GetIAMClient() {
+  const credentials = await GetCredentials();
+  const iamClient = new IAMClient({ credentials });
+  return iamClient;
 }
 
-export async function GetCurrentAwsUserInfo(): Promise<MethodResult<{ [key: string]: string }>> {
-  let result:MethodResult<{ [key: string]: string }> = new MethodResult<{ [key: string]: string }>();
-  const iam = await GetIAMClient();
-
-  try {
-    const user = await iam.getUser().promise();
-    result.result["UserId"] = user.User?.UserId;
-    result.result["UserName"] = user.User?.UserName;
-    return result
-  } 
-  catch (error:any) 
-  {
-    result.isSuccessful = false;
-    result.error = error;
-    ui.showErrorMessage('api.getAwsUserInfo Error !!!', error);
-    ui.logToOutput("api.getAwsUserInfo Error !!!", error); 
-    return result;
-  }
-}
-
-export async function GetLambdaList(Region:string, LambdaName?:string): Promise<MethodResult<string[]>> {
-  let result:MethodResult<string[]> = new MethodResult<string[]>();
+export async function GetLambdaList(
+  region: string,
+  LambdaName?: string
+): Promise<MethodResult<string[]>> {
+  let result: MethodResult<string[]> = new MethodResult<string[]>();
   result.result = [];
 
-  try 
-  {
-    const lambda = await GetLambdaClient(Region);
-    const functionsList = await lambda.listFunctions().promise();
+  try {
+    // Get the Lambda client (v3 client)
+    const lambda = await GetLambdaClient(region);
+    
+    // Create the command to list functions
+    const command = new ListFunctionsCommand({});
+    
+    // Send the command to the client
+    const functionsList = await lambda.send(command);
 
     let matchingFunctions;
-    if(LambdaName)
-    {
+    if (LambdaName) {
       matchingFunctions = functionsList.Functions?.filter(
-        (func) => func.FunctionName?.includes(LambdaName) || LambdaName.length === 0
+        (func) =>
+          func.FunctionName?.includes(LambdaName) || LambdaName.length === 0
       );
-    }
-    else
-    {
+    } else {
       matchingFunctions = functionsList.Functions;
     }
-    
 
     if (matchingFunctions && matchingFunctions.length > 0) {
       matchingFunctions.forEach((func) => {
-        if(func.FunctionName)
-          result.result.push(func.FunctionName);
+        if (func.FunctionName) result.result.push(func.FunctionName);
       });
     }
+
     result.isSuccessful = true;
     return result;
-  } 
-  catch (error:any) 
-  {
+  } catch (error: any) {
     result.isSuccessful = false;
     result.error = error;
-    ui.showErrorMessage('api.GetLambdaList Error !!!', error);
-    ui.logToOutput("api.GetLambdaList Error !!!", error); 
+    ui.showErrorMessage("api.GetLambdaList Error !!!", error);
+    ui.logToOutput("api.GetLambdaList Error !!!", error);
     return result;
   }
 }
 
-export async function TriggerLambda(Region:string, LambdaName:string, Parameters:{[key: string]: any}): Promise<MethodResult<AWS.Lambda.InvocationResponse>> {
-  let result:MethodResult<AWS.Lambda.InvocationResponse> = new MethodResult<AWS.Lambda.InvocationResponse>();
+import {
+  InvokeCommand,
+  InvokeCommandOutput,
+  InvokeCommandInput,
+} from "@aws-sdk/client-lambda";
 
-  try 
-  {
+export async function TriggerLambda(
+  Region: string,
+  LambdaName: string,
+  Parameters: { [key: string]: any }
+): Promise<MethodResult<InvokeCommandOutput>> {
+  let result: MethodResult<InvokeCommandOutput> = new MethodResult<InvokeCommandOutput>();
+
+  try {
     const lambda = await GetLambdaClient(Region);
   
     // Specify the parameters for invoking the Lambda function
-    const param: AWS.Lambda.InvocationRequest = {
+    const param: InvokeCommandInput = {
       FunctionName: LambdaName,
-      InvocationType: 'RequestResponse',
-      Payload: JSON.stringify(Parameters)
+      // Explicitly cast the literal so that its type is the exact union type expected
+      InvocationType: "RequestResponse" as const,
+      Payload: JSON.stringify(Parameters),
     };
-    
-    const response = await lambda.invoke(param).promise();
+
+    const command = new InvokeCommand(param);
+    const response = await lambda.send(command);
+
     result.result = response;
     result.isSuccessful = true;
     return result;
-  } 
-  catch (error:any) 
-  {
+  } catch (error: any) {
     result.isSuccessful = false;
     result.error = error;
-    ui.showErrorMessage('api.TriggerLambda Error !!!', error);
-    ui.logToOutput("api.TriggerLambda Error !!!", error); 
+    ui.showErrorMessage("api.TriggerLambda Error !!!", error);
+    ui.logToOutput("api.TriggerLambda Error !!!", error);
     return result;
   }
 }
 
-export async function GetLambdaLogs(Region:string, Lambda:string) : Promise<MethodResult<string>>
-{
-  ui.logToOutput('Getting logs for Lambda function:' + Lambda); 
-  let result:MethodResult<string> = new MethodResult<string>();
+
+import {
+  DescribeLogStreamsCommand,
+  GetLogEventsCommand,
+} from "@aws-sdk/client-cloudwatch-logs";
+
+export async function GetLambdaLogs(
+  Region: string,
+  Lambda: string
+): Promise<MethodResult<string>> {
+  ui.logToOutput("Getting logs for Lambda function: " + Lambda);
+  let result: MethodResult<string> = new MethodResult<string>();
+
   try {
     // Get the log group name
     const logGroupName = `/aws/lambda/${Lambda}`;
     const cloudwatchlogs = await GetCloudWatchClient(Region);
 
     // Get the streams sorted by the latest event time
-    const streams = await cloudwatchlogs.describeLogStreams({
+    const describeLogStreamsCommand = new DescribeLogStreamsCommand({
       logGroupName,
-      orderBy: 'LastEventTime',
+      orderBy: "LastEventTime",
       descending: true,
       limit: 1,
-    }).promise();
+    });
 
-    if (!streams.logStreams) {
-      result.isSuccessful = false;
-      result.error = new Error('No log streams found for this Lambda function.');
-      ui.showErrorMessage('No log streams found for this Lambda function.', result.error);
-      ui.logToOutput('No log streams found for this Lambda function.'); 
-      return result;
-    }
+    const streamsResponse = await cloudwatchlogs.send(describeLogStreamsCommand);
 
-    if (streams.logStreams && streams.logStreams.length === 0) {
+    if (!streamsResponse.logStreams || streamsResponse.logStreams.length === 0) {
       result.isSuccessful = false;
-      result.error = new Error('No log streams found for this Lambda function.');
-      ui.showErrorMessage('No log streams found for this Lambda function.', result.error);
-      ui.logToOutput('No log streams found for this Lambda function.'); 
+      result.error = new Error("No log streams found for this Lambda function.");
+      ui.showErrorMessage("No log streams found for this Lambda function.", result.error);
+      ui.logToOutput("No log streams found for this Lambda function.");
       return result;
     }
 
     // Get the latest log events from the first stream
-    const logStreamName = streams.logStreams[0].logStreamName;
+    const logStreamName = streamsResponse.logStreams[0].logStreamName;
     if (!logStreamName) {
       result.isSuccessful = false;
-      result.error = new Error('No log stream name found for this Lambda function.');
-      ui.showErrorMessage('No log stream name found for this Lambda function.', result.error);
-      ui.logToOutput('No log stream name found for this Lambda function.'); 
+      result.error = new Error("No log stream name found for this Lambda function.");
+      ui.showErrorMessage("No log stream name found for this Lambda function.", result.error);
+      ui.logToOutput("No log stream name found for this Lambda function.");
       return result;
     }
-    const events = await cloudwatchlogs.getLogEvents({
+
+    const getLogEventsCommand = new GetLogEventsCommand({
       logGroupName: logGroupName,
       logStreamName: logStreamName,
       limit: 50, // Adjust the limit as needed
       startFromHead: true, // Start from the beginning of the log stream
-    }).promise();
+    });
 
-    if (!events.events) {
+    const eventsResponse = await cloudwatchlogs.send(getLogEventsCommand);
+
+    if (!eventsResponse.events || eventsResponse.events.length === 0) {
       result.isSuccessful = false;
-      result.error = new Error('No log events found for this Lambda function.');
-      ui.showErrorMessage('No log events found for this Lambda function.', result.error);
-      ui.logToOutput('No log events found for this Lambda function.'); 
+      result.error = new Error("No log events found for this Lambda function.");
+      ui.showErrorMessage("No log events found for this Lambda function.", result.error);
+      ui.logToOutput("No log events found for this Lambda function.");
       return result;
     }
 
-    // Display the log events
-    events.events.forEach(event => {
-      if (event.message) {
-        result.result += event.message + '\n';
-      }
+    // Concatenate log messages
+    result.result = eventsResponse.events
+      .map((event) => event.message)
+      .filter((msg) => msg)
+      .join("\n");
+
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.GetLambdaLogs Error !!!", error);
+    ui.logToOutput("api.GetLambdaLogs Error !!!", error);
+    return result;
+  }
+}
+
+
+import {
+  GetFunctionCommand,
+  GetFunctionCommandOutput,
+} from "@aws-sdk/client-lambda";
+
+export async function GetLambda(
+  Region: string,
+  LambdaName: string
+): Promise<MethodResult<GetFunctionCommandOutput>> {
+  let result: MethodResult<GetFunctionCommandOutput> = new MethodResult<GetFunctionCommandOutput>();
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    const command = new GetFunctionCommand({
+      FunctionName: LambdaName,
     });
 
-    result.isSuccessful = true;
-    return result;
-
-  } catch (error:any) {
-    result.isSuccessful = false;
-    result.error = error;
-    ui.showErrorMessage('api.GetLambdaLogs Error !!!', error);
-    ui.logToOutput("api.GetLambdaLogs Error !!!", error); 
-    return result;
-  }
-};
-
-
-export async function GetLambda(Region:string, LambdaName:string): Promise<MethodResult<AWS.Lambda.GetFunctionResponse>> {
-  let result:MethodResult<AWS.Lambda.GetFunctionResponse> = new MethodResult<AWS.Lambda.GetFunctionResponse>();
-
-  try 
-  {
-    const lambda = await GetLambdaClient(Region);
-  
-    const param: AWS.Lambda.GetFunctionRequest = {
-      FunctionName: LambdaName
-    };
-    
-    const response = await lambda.getFunction(param).promise();
+    const response = await lambda.send(command);
     result.result = response;
     result.isSuccessful = true;
     return result;
-  } 
-  catch (error:any) 
-  {
+  } catch (error: any) {
     result.isSuccessful = false;
     result.error = error;
-    ui.showErrorMessage('api.GetLambda Error !!!', error);
-    ui.logToOutput("api.GetLambda Error !!!", error); 
+    ui.showErrorMessage("api.GetLambda Error !!!", error);
+    ui.logToOutput("api.GetLambda Error !!!", error);
     return result;
   }
 }
 
-export async function UpdateLambdaCode(Region:string, LambdaName:string, CodeFilePath: string): Promise<MethodResult<AWS.Lambda.FunctionConfiguration>> {
-  let result:MethodResult<AWS.Lambda.FunctionConfiguration> = new MethodResult<AWS.Lambda.FunctionConfiguration>();
 
-  try 
-  {
+import {
+  UpdateFunctionCodeCommand,
+  UpdateFunctionCodeCommandOutput,
+} from "@aws-sdk/client-lambda";
+
+export async function UpdateLambdaCode(
+  Region: string,
+  LambdaName: string,
+  CodeFilePath: string
+): Promise<MethodResult<UpdateFunctionCodeCommandOutput>> {
+  let result: MethodResult<UpdateFunctionCodeCommandOutput> =
+    new MethodResult<UpdateFunctionCodeCommandOutput>();
+
+  try {
     const lambda = await GetLambdaClient(Region);
-  
-    let zipresponse = await ZipTextFile(CodeFilePath);
 
+    let zipresponse = await ZipTextFile(CodeFilePath);
     const zipFileContents = fs.readFileSync(zipresponse.result);
 
-    const lambdaParams: AWS.Lambda.UpdateFunctionCodeRequest = {
+    const command = new UpdateFunctionCodeCommand({
       FunctionName: LambdaName,
-      ZipFile: zipFileContents
-    };
-    
-    const response = await lambda.updateFunctionCode(lambdaParams).promise();
+      ZipFile: zipFileContents,
+    });
+
+    const response = await lambda.send(command);
     result.result = response;
     result.isSuccessful = true;
     return result;
-  } 
-  catch (error:any) 
-  {
+  } catch (error: any) {
     result.isSuccessful = false;
     result.error = error;
-    ui.showErrorMessage('api.GetLambda Error !!!', error);
-    ui.logToOutput("api.GetLambda Error !!!", error); 
+    ui.showErrorMessage("api.UpdateLambdaCode Error !!!", error);
+    ui.logToOutput("api.UpdateLambdaCode Error !!!", error);
     return result;
   }
 }
+
+
 
 export async function ZipTextFile(inputFilePath: string, outputZipPath?: string): Promise<MethodResult<string>> {
   let result:MethodResult<string> = new MethodResult<string>();
@@ -353,67 +368,35 @@ export async function ZipTextFile(inputFilePath: string, outputZipPath?: string)
   }
 }
 
+import { GetUserCommand, GetUserCommandOutput } from "@aws-sdk/client-iam";
+
 export async function TestAwsConnection(): Promise<MethodResult<boolean>> {
-  let result:MethodResult<boolean> = new MethodResult<boolean>();
+  let result: MethodResult<boolean> = new MethodResult<boolean>();
 
-  try 
-  {
-    const iam = await GetIAMClient()
+  try {
+    const iam = await GetIAMClient();
 
-    let response = await iam.getUser().promise();
+    const command = new GetUserCommand({});
+    let response: GetUserCommandOutput = await iam.send(command);
+
     result.isSuccessful = true;
     result.result = true;
     return result;
-  } 
-  catch (error:any) 
-  {
-    if (error.name.includes("Signature"))
-    {
+  } catch (error: any) {
+    if (error.name.includes("Signature")) {
       result.isSuccessful = false;
       result.error = error;
-      ui.showErrorMessage('api.TestAwsConnection Error !!!', error);
-      ui.logToOutput("api.TestAwsConnection Error !!!", error); 
-    }
-    else
-    {
+      ui.showErrorMessage("api.TestAwsConnection Error !!!", error);
+      ui.logToOutput("api.TestAwsConnection Error !!!", error);
+    } else {
       result.isSuccessful = true;
       result.result = true;
     }
-    
+
     return result;
   }
 }
 
-export async function GetRegionList(): Promise<MethodResult<string[]>> {
-  let result:MethodResult<string[]> = new MethodResult<string[]>();
-  result.result = [];
-
-  try 
-  {
-    const ec2 = await GetEC2Client()
-    let response = await ec2.describeRegions().promise();
-
-    result.isSuccessful = true;
-    if(response.Regions)
-    {
-      for(var r of response.Regions)
-      {
-        if(r.RegionName)
-        {
-          result.result.push(r.RegionName);
-        }
-      }
-    }
-    return result;
-  } catch (error:any) 
-  {
-    result.isSuccessful = false;
-    result.error = error;
-    ui.showErrorMessage('api.GetRegionList Error !!!', error);
-    ui.logToOutput("api.GetRegionList Error !!!", error); 
-    return result;
-  }
-}
 
 export async function GetAwsProfileList(): Promise<MethodResult<string[]>> {
   ui.logToOutput("api.GetAwsProfileList Started");
