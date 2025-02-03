@@ -164,7 +164,7 @@ export class LambdaTreeView {
 			let ShowHiddenNodesTemp: boolean | undefined = this.context.globalState.get('ShowHiddenNodes');
 			if (ShowHiddenNodesTemp) { this.isShowHiddenNodes = ShowHiddenNodesTemp; }
 
-			let LambdaListTemp:{ [key: string]: { [key: string]: string } } | undefined  = this.context.globalState.get('LambdaList');
+			let LambdaListTemp:[{Region: string, Lambda: string}] | undefined  = this.context.globalState.get('LambdaList');
 			if(LambdaListTemp)
 			{
 				this.treeDataProvider.SetLambdaList(LambdaListTemp);
@@ -188,16 +188,16 @@ export class LambdaTreeView {
 		}
 	}
 
-	SetFilterMessage(){
+	async SetFilterMessage(){
 		this.view.message = 
-		this.GetFilterProfilePrompt()
+		await this.GetFilterProfilePrompt()
 		+ this.GetBoolenSign(this.isShowOnlyFavorite) + "Fav, " 
 		+ this.GetBoolenSign(this.isShowHiddenNodes) + "Hidden, "
 		+ this.FilterString;
 	}
 
-	private GetFilterProfilePrompt() {
-		if(api.IsSharedIniFileCredentials())
+	async GetFilterProfilePrompt() {
+		if(await api.IsSharedIniFileCredentials())
 		{
 			return "Profile:" + this.AwsProfile + " ";
 		}
@@ -211,10 +211,13 @@ export class LambdaTreeView {
 	async AddLambda(){
 		ui.logToOutput('LambdaTreeView.AddLambda Started');
 
+		let selectedRegion = await vscode.window.showInputBox({ placeHolder: 'Enter Region Eg: us-east-1', value: 'us-east-1' });
+		if(selectedRegion===undefined){ return; }
+
 		let selectedLambdaName = await vscode.window.showInputBox({ placeHolder: 'Enter Lambda Name / Search Text' });
 		if(selectedLambdaName===undefined){ return; }
 
-		var resultLambda = await api.GetLambdaList("us-east-1", selectedLambdaName);
+		var resultLambda = await api.GetLambdaList(selectedRegion, selectedLambdaName);
 		if(!resultLambda.isSuccessful){ return; }
 
 		let selectedLambdaList = await vscode.window.showQuickPick(resultLambda.result, {canPickMany:true, placeHolder: 'Select Lambda(s)'});
@@ -222,11 +225,7 @@ export class LambdaTreeView {
 
 		for(var selectedLambda of selectedLambdaList)
 		{
-			let LambdaBody = {
-				Lambda: selectedLambda,
-				Region: "us-east-1"
-			}
-			this.treeDataProvider.AddLambda(selectedLambda, LambdaBody);
+			this.treeDataProvider.AddLambda(selectedRegion, selectedLambda);
 		}
 		this.SaveState();
 	}
@@ -236,8 +235,9 @@ export class LambdaTreeView {
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
 		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
 
-		this.treeDataProvider.RemoveLambda(node.Lambda);		
+		this.treeDataProvider.RemoveLambda(node.Region, node.Lambda);		
 		this.SaveState();
 	}
 
@@ -257,8 +257,22 @@ export class LambdaTreeView {
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
 		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
 
-		ui.showInfoMessage("Work In Progress");
+		let result = await api.TriggerLambda(node.Region, node.Lambda, {});
+		if(!result.isSuccessful)
+		{
+			ui.logToOutput("api.TriggerLambda Error !!!", result.error);
+			ui.showErrorMessage('Trigger Lambda Error !!!', result.error);
+			return;
+		}
+		ui.logToOutput("api.TriggerLambda Success !!!");
+		if(result.result && result.result.Payload)
+		{
+			ui.logToOutput("api.TriggerLambda PayLoad \n" + result.result.Payload.toString());
+		}
+		
+		ui.showInfoMessage('Lambda Triggered Successfully');
 		
 	}
 
@@ -267,8 +281,18 @@ export class LambdaTreeView {
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
 		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
 
-		ui.showInfoMessage("Work In Progress");
+		let resultLogs = await api.GetLambdaLogs(node.Region, node.Lambda);
+		if(!resultLogs.isSuccessful)
+		{
+			ui.logToOutput("api.GetLambdaLogs Error !!!", resultLogs.error);
+			ui.showErrorMessage('Get Lambda Logs Error !!!', resultLogs.error);
+			return;
+		}
+		ui.logToOutput("api.GetLambdaLogs Success !!!");
+		ui.logToOutput("api.GetLambdaLogs Logs \n" + resultLogs.result);
+		ui.showInfoMessage('Lambda Latest Logs Retrieved Successfully');
 		
 	}
 

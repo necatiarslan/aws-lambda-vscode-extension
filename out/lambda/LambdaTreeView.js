@@ -152,15 +152,15 @@ class LambdaTreeView {
             ui.logToOutput("LambdaTreeView.loadState Error !!!");
         }
     }
-    SetFilterMessage() {
+    async SetFilterMessage() {
         this.view.message =
-            this.GetFilterProfilePrompt()
+            await this.GetFilterProfilePrompt()
                 + this.GetBoolenSign(this.isShowOnlyFavorite) + "Fav, "
                 + this.GetBoolenSign(this.isShowHiddenNodes) + "Hidden, "
                 + this.FilterString;
     }
-    GetFilterProfilePrompt() {
-        if (api.IsSharedIniFileCredentials()) {
+    async GetFilterProfilePrompt() {
+        if (await api.IsSharedIniFileCredentials()) {
             return "Profile:" + this.AwsProfile + " ";
         }
         return "";
@@ -170,11 +170,15 @@ class LambdaTreeView {
     }
     async AddLambda() {
         ui.logToOutput('LambdaTreeView.AddLambda Started');
+        let selectedRegion = await vscode.window.showInputBox({ placeHolder: 'Enter Region Eg: us-east-1', value: 'us-east-1' });
+        if (selectedRegion === undefined) {
+            return;
+        }
         let selectedLambdaName = await vscode.window.showInputBox({ placeHolder: 'Enter Lambda Name / Search Text' });
         if (selectedLambdaName === undefined) {
             return;
         }
-        var resultLambda = await api.GetLambdaList("us-east-1", selectedLambdaName);
+        var resultLambda = await api.GetLambdaList(selectedRegion, selectedLambdaName);
         if (!resultLambda.isSuccessful) {
             return;
         }
@@ -183,11 +187,7 @@ class LambdaTreeView {
             return;
         }
         for (var selectedLambda of selectedLambdaList) {
-            let LambdaBody = {
-                Lambda: selectedLambda,
-                Region: "us-east-1"
-            };
-            this.treeDataProvider.AddLambda(selectedLambda, LambdaBody);
+            this.treeDataProvider.AddLambda(selectedRegion, selectedLambda);
         }
         this.SaveState();
     }
@@ -199,7 +199,10 @@ class LambdaTreeView {
         if (!node.Lambda) {
             return;
         }
-        this.treeDataProvider.RemoveLambda(node.Lambda);
+        if (!node.Region) {
+            return;
+        }
+        this.treeDataProvider.RemoveLambda(node.Region, node.Lambda);
         this.SaveState();
     }
     async Goto(node) {
@@ -221,7 +224,20 @@ class LambdaTreeView {
         if (!node.Lambda) {
             return;
         }
-        ui.showInfoMessage("Work In Progress");
+        if (!node.Region) {
+            return;
+        }
+        let result = await api.TriggerLambda(node.Region, node.Lambda, {});
+        if (!result.isSuccessful) {
+            ui.logToOutput("api.TriggerLambda Error !!!", result.error);
+            ui.showErrorMessage('Trigger Lambda Error !!!', result.error);
+            return;
+        }
+        ui.logToOutput("api.TriggerLambda Success !!!");
+        if (result.result && result.result.Payload) {
+            ui.logToOutput("api.TriggerLambda PayLoad \n" + result.result.Payload.toString());
+        }
+        ui.showInfoMessage('Lambda Triggered Successfully');
     }
     async LatestLogs(node) {
         ui.logToOutput('LambdaTreeView.LatestLogs Started');
@@ -231,7 +247,18 @@ class LambdaTreeView {
         if (!node.Lambda) {
             return;
         }
-        ui.showInfoMessage("Work In Progress");
+        if (!node.Region) {
+            return;
+        }
+        let resultLogs = await api.GetLambdaLogs(node.Region, node.Lambda);
+        if (!resultLogs.isSuccessful) {
+            ui.logToOutput("api.GetLambdaLogs Error !!!", resultLogs.error);
+            ui.showErrorMessage('Get Lambda Logs Error !!!', resultLogs.error);
+            return;
+        }
+        ui.logToOutput("api.GetLambdaLogs Success !!!");
+        ui.logToOutput("api.GetLambdaLogs Logs \n" + resultLogs.result);
+        ui.showInfoMessage('Lambda Latest Logs Retrieved Successfully');
     }
     async SelectAwsProfile(node) {
         ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');

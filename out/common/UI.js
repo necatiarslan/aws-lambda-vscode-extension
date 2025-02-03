@@ -34,7 +34,7 @@ exports.showOutputMessage = showOutputMessage;
 function logToOutput(message, error) {
     let now = new Date().toLocaleString();
     if (!logsOutputChannel) {
-        logsOutputChannel = vscode.window.createOutputChannel("AwsS3-Log");
+        logsOutputChannel = vscode.window.createOutputChannel("AwsLambda-Log");
     }
     if (typeof message === "object") {
         logsOutputChannel.appendLine("[" + now + "] " + JSON.stringify(message, null, 4));

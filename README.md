@@ -14,6 +14,8 @@ https://github.com/necatiarslan/aws-lambda-vscode-extension/issues/new
 
 
 ## Todo
+- Select Region before adding lambda
+- Add Region to LambdaTreeItem
 - (node:58629) NOTE: The AWS SDK for JavaScript (v2) is in maintenance mode.
 SDK releases are limited to address critical bug fixes and security issues only.
 Please migrate your code to use AWS SDK for JavaScript (v3).

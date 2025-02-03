@@ -12,7 +12,7 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 
 	//FunctionName, FunctionArn, Runtime, AccountName, Region
 
-	private LambdaList: { [key: string]: { [key: string]: string } } = { };
+	private   LambdaList: [{Region: string, Lambda: string}] = [{Region: "", Lambda: ""}];
 
 	public ViewType:ViewType = ViewType.Lambda;
 
@@ -28,24 +28,36 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		return this.LambdaList;
 	}
 
-	public SetLambdaList(LambdaList: {}){
+	public SetLambdaList(LambdaList: [{Region: string, Lambda: string}]){
 		this.LambdaList = LambdaList;
 		this.LoadLambdaNodeList();
 	}
 
-	AddLambda(Lambda:string, LambdaBody:{}){
-		if( Lambda in  this.LambdaList){ return; }
+	AddLambda(Region:string, Lambda:string){
+		for(var item of this.LambdaList)
+		{
+			if(item.Region === Region && item.Lambda === Lambda)
+			{
+				return;
+			}
+		}
+		
+		this.LambdaList.push({Region: Region, Lambda: Lambda});
 
-		this.LambdaList[Lambda] = LambdaBody;
 		this.LoadLambdaNodeList();
 		this.Refresh();
 	}
 
-	RemoveLambda(Lambda:string){
-		if(Lambda in this.LambdaList)
+	RemoveLambda(Region:string, Lambda:string){
+		for(var i=0; i<this.LambdaList.length; i++)
 		{
-			delete this.LambdaList[Lambda];
+			if(this.LambdaList[i].Region === Region && this.LambdaList[i].Lambda === Lambda)
+			{
+				this.LambdaList.splice(i, 1);
+				break;
+			}
 		}
+
 		this.LoadLambdaNodeList();
 		this.Refresh();
 	}
@@ -53,11 +65,12 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 	LoadLambdaNodeList(){
 		this.LambdaNodeList = [];
 		
-		for(var lambda in this.LambdaList)
+		for(var item of this.LambdaList)
 		{
-			let treeItem = new LambdaTreeItem(lambda, TreeItemType.Lambda);
+			let treeItem = new LambdaTreeItem(item.Lambda, TreeItemType.Lambda);
 			//treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-			treeItem.Lambda = lambda;
+			treeItem.Region = item.Region;
+			treeItem.Lambda = item.Lambda;
 			this.LambdaNodeList.push(treeItem);
 		}
 	}

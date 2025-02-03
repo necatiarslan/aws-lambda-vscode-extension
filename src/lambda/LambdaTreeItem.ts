@@ -6,6 +6,7 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public TreeItemType:TreeItemType;
 	public Text:string;
 	public Lambda:string | undefined;
+	public Region:string | undefined;
 	public Shortcut:string | undefined;
 	public Parent:LambdaTreeItem | undefined;
 	public Children:LambdaTreeItem[] = [];
@@ -69,7 +70,7 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public IsFilterStringMatchAnyChildren(node:LambdaTreeItem, FilterString:string): boolean{
 		for(var n of node.Children)
 		{
-			if(n.Text.includes(FilterString))
+			if(n.Text.includes(FilterString) || n.Region?.includes(FilterString) || n.Lambda?.includes(FilterString))
 			{
 				return true;
 			}

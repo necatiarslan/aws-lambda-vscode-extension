@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.GetRegionList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambda = exports.TriggerLambda = exports.GetLambdaList = exports.GetCurrentAwsUserInfo = exports.IsEnvironmentCredentials = exports.IsSharedIniFileCredentials = void 0;
+exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.GetRegionList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambda = exports.GetLambdaLogs = exports.TriggerLambda = exports.GetLambdaList = exports.GetCurrentAwsUserInfo = exports.GetCredentials = exports.GetCredentialProviderName = exports.IsEnvironmentCredentials = exports.IsSharedIniFileCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const AWS = require("aws-sdk");
 const ui = require("./UI");
@@ -12,77 +12,70 @@ const parseKnownFiles_1 = require("../aws-sdk/parseKnownFiles");
 const LambdaTreeView = require("../lambda/LambdaTreeView");
 const fs = require("fs");
 const archiver = require("archiver");
-function IsSharedIniFileCredentials(credentials = undefined) {
-    if (credentials) {
-        return GetCredentialProvider(credentials) === "SharedIniFileCredentials";
-    }
-    return GetCredentialProvider(AWS.config.credentials) === "SharedIniFileCredentials";
+async function IsSharedIniFileCredentials(credentials = undefined) {
+    return await GetCredentialProviderName(credentials) === "SharedIniFileCredentials";
 }
 exports.IsSharedIniFileCredentials = IsSharedIniFileCredentials;
-function IsEnvironmentCredentials(credentials = undefined) {
-    if (credentials) {
-        return GetCredentialProvider(credentials) === "EnvironmentCredentials";
-    }
-    return GetCredentialProvider(AWS.config.credentials) === "EnvironmentCredentials";
+async function IsEnvironmentCredentials(credentials = undefined) {
+    return await GetCredentialProviderName(credentials) === "EnvironmentCredentials";
 }
 exports.IsEnvironmentCredentials = IsEnvironmentCredentials;
-function GetCredentialProvider(credentials) {
-    if (credentials instanceof (AWS.EnvironmentCredentials)) {
-        return "EnvironmentCredentials";
+async function GetCredentialProviderName(credentials = undefined) {
+    if (!credentials) {
+        credentials = GetCredentials();
     }
-    else if (credentials instanceof (AWS.ECSCredentials)) {
-        return "ECSCredentials";
-    }
-    else if (credentials instanceof (AWS.SsoCredentials)) {
-        return "SsoCredentials";
-    }
-    else if (credentials instanceof (AWS.SharedIniFileCredentials)) {
-        return "SharedIniFileCredentials";
-    }
-    else if (credentials instanceof (AWS.ProcessCredentials)) {
-        return "ProcessCredentials";
-    }
-    else if (credentials instanceof (AWS.TokenFileWebIdentityCredentials)) {
-        return "TokenFileWebIdentityCredentials";
-    }
-    else if (credentials instanceof (AWS.EC2MetadataCredentials)) {
-        return "EC2MetadataCredentials";
-    }
-    return "UnknownProvider";
+    return credentials.constructor.name;
 }
-function GetCredentials() {
-    if (!AWS.config.credentials) {
-        throw new Error("Aws credentials not found !!!");
-    }
-    let credentials = AWS.config.credentials;
-    if (IsSharedIniFileCredentials()) {
-        if (LambdaTreeView.LambdaTreeView.Current && LambdaTreeView.LambdaTreeView.Current?.AwsProfile != "default") {
-            credentials = new AWS.SharedIniFileCredentials({ profile: LambdaTreeView.LambdaTreeView.Current?.AwsProfile });
+exports.GetCredentialProviderName = GetCredentialProviderName;
+async function GetCredentials() {
+    let credentials;
+    try {
+        const provider = new AWS.CredentialProviderChain();
+        credentials = await provider.resolvePromise();
+        if (!credentials) {
+            throw new Error("Aws credentials not found !!!");
         }
+        if (await IsSharedIniFileCredentials(credentials)) {
+            if (LambdaTreeView.LambdaTreeView.Current && LambdaTreeView.LambdaTreeView.Current?.AwsProfile != "default") {
+                credentials = new AWS.SharedIniFileCredentials({ profile: LambdaTreeView.LambdaTreeView.Current?.AwsProfile });
+            }
+        }
+        ui.logToOutput("Aws credentials provider " + await GetCredentialProviderName(credentials));
+        ui.logToOutput("Aws credentials AccessKeyId=" + credentials?.accessKeyId);
+        return credentials;
     }
-    ui.logToOutput("Aws credentials provider " + GetCredentialProvider(credentials));
-    ui.logToOutput("Aws credentials AccessKeyId=" + credentials?.accessKeyId);
-    return credentials;
+    catch (error) {
+        ui.showErrorMessage('Aws Credentials Not Found !!!', error);
+        ui.logToOutput("GetCredentials Error !!!", error);
+        return credentials;
+    }
 }
-function GetLambdaClient(Region) {
+exports.GetCredentials = GetCredentials;
+async function GetLambdaClient(Region) {
     let lambda = undefined;
-    let credentials = GetCredentials();
+    let credentials = await GetCredentials();
     lambda = new AWS.Lambda({ region: Region, credentials: credentials, endpoint: LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint });
     return lambda;
 }
-function GetIAMClient() {
-    let credentials = GetCredentials();
+async function GetCloudWatchClient(Region) {
+    let cloudwatchlogs = undefined;
+    let credentials = await GetCredentials();
+    cloudwatchlogs = new AWS.CloudWatchLogs({ region: Region, credentials: credentials, endpoint: LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint });
+    return cloudwatchlogs;
+}
+async function GetIAMClient() {
+    let credentials = await GetCredentials();
     const iam = new AWS.IAM({ credentials: credentials });
     return iam;
 }
-function GetEC2Client() {
-    let credentials = GetCredentials();
+async function GetEC2Client() {
+    let credentials = await GetCredentials();
     const ec2 = new AWS.EC2({ region: 'us-east-1', credentials: credentials });
     return ec2;
 }
 async function GetCurrentAwsUserInfo() {
     let result = new MethodResult_1.MethodResult();
-    const iam = GetIAMClient();
+    const iam = await GetIAMClient();
     try {
         const user = await iam.getUser().promise();
         result.result["UserId"] = user.User?.UserId;
@@ -102,7 +95,7 @@ async function GetLambdaList(Region, LambdaName) {
     let result = new MethodResult_1.MethodResult();
     result.result = [];
     try {
-        const lambda = GetLambdaClient(Region);
+        const lambda = await GetLambdaClient(Region);
         const functionsList = await lambda.listFunctions().promise();
         let matchingFunctions;
         if (LambdaName) {
@@ -132,7 +125,7 @@ exports.GetLambdaList = GetLambdaList;
 async function TriggerLambda(Region, LambdaName, Parameters) {
     let result = new MethodResult_1.MethodResult();
     try {
-        const lambda = GetLambdaClient(Region);
+        const lambda = await GetLambdaClient(Region);
         // Specify the parameters for invoking the Lambda function
         const param = {
             FunctionName: LambdaName,
@@ -153,10 +146,79 @@ async function TriggerLambda(Region, LambdaName, Parameters) {
     }
 }
 exports.TriggerLambda = TriggerLambda;
+async function GetLambdaLogs(Region, Lambda) {
+    ui.logToOutput('Getting logs for Lambda function:' + Lambda);
+    let result = new MethodResult_1.MethodResult();
+    try {
+        // Get the log group name
+        const logGroupName = `/aws/lambda/${Lambda}`;
+        const cloudwatchlogs = await GetCloudWatchClient(Region);
+        // Get the streams sorted by the latest event time
+        const streams = await cloudwatchlogs.describeLogStreams({
+            logGroupName,
+            orderBy: 'LastEventTime',
+            descending: true,
+            limit: 1,
+        }).promise();
+        if (!streams.logStreams) {
+            result.isSuccessful = false;
+            result.error = new Error('No log streams found for this Lambda function.');
+            ui.showErrorMessage('No log streams found for this Lambda function.', result.error);
+            ui.logToOutput('No log streams found for this Lambda function.');
+            return result;
+        }
+        if (streams.logStreams && streams.logStreams.length === 0) {
+            result.isSuccessful = false;
+            result.error = new Error('No log streams found for this Lambda function.');
+            ui.showErrorMessage('No log streams found for this Lambda function.', result.error);
+            ui.logToOutput('No log streams found for this Lambda function.');
+            return result;
+        }
+        // Get the latest log events from the first stream
+        const logStreamName = streams.logStreams[0].logStreamName;
+        if (!logStreamName) {
+            result.isSuccessful = false;
+            result.error = new Error('No log stream name found for this Lambda function.');
+            ui.showErrorMessage('No log stream name found for this Lambda function.', result.error);
+            ui.logToOutput('No log stream name found for this Lambda function.');
+            return result;
+        }
+        const events = await cloudwatchlogs.getLogEvents({
+            logGroupName: logGroupName,
+            logStreamName: logStreamName,
+            limit: 50,
+            startFromHead: true, // Start from the beginning of the log stream
+        }).promise();
+        if (!events.events) {
+            result.isSuccessful = false;
+            result.error = new Error('No log events found for this Lambda function.');
+            ui.showErrorMessage('No log events found for this Lambda function.', result.error);
+            ui.logToOutput('No log events found for this Lambda function.');
+            return result;
+        }
+        // Display the log events
+        events.events.forEach(event => {
+            if (event.message) {
+                result.result += event.message + '\n';
+            }
+        });
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage('api.GetLambdaLogs Error !!!', error);
+        ui.logToOutput("api.GetLambdaLogs Error !!!", error);
+        return result;
+    }
+}
+exports.GetLambdaLogs = GetLambdaLogs;
+;
 async function GetLambda(Region, LambdaName) {
     let result = new MethodResult_1.MethodResult();
     try {
-        const lambda = GetLambdaClient(Region);
+        const lambda = await GetLambdaClient(Region);
         const param = {
             FunctionName: LambdaName
         };
@@ -177,7 +239,7 @@ exports.GetLambda = GetLambda;
 async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
     let result = new MethodResult_1.MethodResult();
     try {
-        const lambda = GetLambdaClient(Region);
+        const lambda = await GetLambdaClient(Region);
         let zipresponse = await ZipTextFile(CodeFilePath);
         const zipFileContents = fs.readFileSync(zipresponse.result);
         const lambdaParams = {
@@ -227,7 +289,7 @@ exports.ZipTextFile = ZipTextFile;
 async function TestAwsConnection() {
     let result = new MethodResult_1.MethodResult();
     try {
-        const iam = GetIAMClient();
+        const iam = await GetIAMClient();
         let response = await iam.getUser().promise();
         result.isSuccessful = true;
         result.result = true;
@@ -252,7 +314,7 @@ async function GetRegionList() {
     let result = new MethodResult_1.MethodResult();
     result.result = [];
     try {
-        const ec2 = GetEC2Client();
+        const ec2 = await GetEC2Client();
         let response = await ec2.describeRegions().promise();
         result.isSuccessful = true;
         if (response.Regions) {

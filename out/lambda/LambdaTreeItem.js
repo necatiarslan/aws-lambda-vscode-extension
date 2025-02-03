@@ -48,7 +48,7 @@ class LambdaTreeItem extends vscode.TreeItem {
     }
     IsFilterStringMatchAnyChildren(node, FilterString) {
         for (var n of node.Children) {
-            if (n.Text.includes(FilterString)) {
+            if (n.Text.includes(FilterString) || n.Region?.includes(FilterString) || n.Lambda?.includes(FilterString)) {
                 return true;
             }
             else if (n.Children.length > 0) {

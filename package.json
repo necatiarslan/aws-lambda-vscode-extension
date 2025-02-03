@@ -86,6 +86,10 @@
         "command": "LambdaTreeView.LatestLogs",
         "title": "Logs",
         "icon": "$(output)"
+      },
+      {
+        "command": "LambdaTreeView.UpdateAwsEndPoint",
+        "title": "Update Aws EndPoint"
       }
     ],
     "menus": {
@@ -119,6 +123,11 @@
           "command": "LambdaTreeView.Refresh",
           "when": "view == LambdaTreeView",
           "group": "navigation@7"
+        },
+        {
+          "command": "LambdaTreeView.UpdateAwsEndPoint",
+          "when": "view == LambdaTreeView",
+          "group": "other"
         }
       ],
       "view/item/context": [
@@ -153,15 +162,15 @@
           "group": "Lambda"
         },
         {
-					"command": "LambdaTreeView.TriggerLambda",
-					"when": "view == LambdaTreeView",
-					"group": "inline"
-				},
-				{
-					"command": "LambdaTreeView.LatestLogs",
-					"when": "view == LambdaTreeView",
-					"group": "inline"
-				}
+          "command": "LambdaTreeView.TriggerLambda",
+          "when": "view == LambdaTreeView",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.LatestLogs",
+          "when": "view == LambdaTreeView",
+          "group": "inline"
+        }
       ]
     },
     "viewsContainers": {
@@ -207,15 +216,14 @@
     "@typescript-eslint/parser": "^5.30.0",
     "@vscode/test-electron": "^2.1.5",
     "eslint": "^8.18.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.0.0",
+    "glob": "^11.0.1",
+    "mocha": "^11.1.0",
     "typescript": "^4.7.4"
   },
   "dependencies": {
     "@aws-sdk/credential-provider-node": "^3.181.0",
-    "@vscode/codicons": "^0.0.32",
-    "@vscode/webview-ui-toolkit": "^1.2.0",
-    "archiver": "^6.0.1",
+    "@vscode/codicons": "^0.0.36",
+    "archiver": "^7.0.1",
     "aws-sdk": "^2.1271.0",
     "clipboard": "^2.0.11",
     "tmp": "^0.2.1"
