@@ -64,12 +64,40 @@ export function activate(context: vscode.ExtensionContext) {
 		treeView.TriggerLambda(node);
 	});
 
-	vscode.commands.registerCommand('LambdaTreeView.LatestLogs', (node: LambdaTreeItem) => {
-		treeView.LatestLogs(node);
+	vscode.commands.registerCommand('LambdaTreeView.ViewLatestLog', (node: LambdaTreeItem) => {
+		treeView.ViewLatestLog(node);
 	});
 
 	vscode.commands.registerCommand('LambdaTreeView.LambdaView', (node: LambdaTreeItem) => {
 		treeView.LambdaView(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.PrintLambda', async (node: LambdaTreeItem) => {
+		await treeView.PrintLambda(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.UpdateCodes', async (node: LambdaTreeItem) => {
+		await treeView.UpdateCodes(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.SetCodePath', async (node: LambdaTreeItem) => {
+		await treeView.SetCodePath(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.ViewLog', async (node: LambdaTreeItem) => {
+		await treeView.ViewLog(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.RefreshLogs', async (node: LambdaTreeItem) => {
+		await treeView.RefreshLogs(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.RemoveTriggerConfig', async (node: LambdaTreeItem) => {
+		await treeView.RemoveTriggerConfig(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.AddTriggerConfig', async (node: LambdaTreeItem) => {
+		await treeView.AddTriggerConfig(node);
 	});
 
 	ui.logToOutput('Aws Lambda Extension activation completed');

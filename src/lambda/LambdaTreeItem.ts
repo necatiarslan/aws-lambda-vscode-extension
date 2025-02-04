@@ -26,6 +26,31 @@ export class LambdaTreeItem extends vscode.TreeItem {
 			this.iconPath = new vscode.ThemeIcon('server-process');
 			this.contextValue = "Lambda"
 		}
+		else if(this.TreeItemType === TreeItemType.Code)
+		{
+			this.iconPath = new vscode.ThemeIcon('file-code');
+			this.contextValue = "Code"
+		}
+		else if(this.TreeItemType === TreeItemType.TriggerGroup)
+		{
+			this.iconPath = new vscode.ThemeIcon('run-all');
+			this.contextValue = "TriggerGroup"
+		}
+		else if(this.TreeItemType === TreeItemType.TriggerConfig)
+		{
+			this.iconPath = new vscode.ThemeIcon('run-all');
+			this.contextValue = "TriggerConfig"
+		}
+		else if(this.TreeItemType === TreeItemType.LogGroup)
+		{
+			this.iconPath = new vscode.ThemeIcon('output');
+			this.contextValue = "LogGroup"
+		}
+		else if(this.TreeItemType === TreeItemType.LogStream)
+		{
+			this.iconPath = new vscode.ThemeIcon('output');
+			this.contextValue = "LogStream"
+		}
 		else
 		{
 			this.iconPath = new vscode.ThemeIcon('circle-outline');
@@ -86,4 +111,9 @@ export class LambdaTreeItem extends vscode.TreeItem {
 
 export enum TreeItemType{
 	Lambda = 1,
+	Code = 2,
+	LogGroup = 3,
+	LogStream = 4,
+	TriggerGroup = 5,
+	TriggerConfig = 6
 }

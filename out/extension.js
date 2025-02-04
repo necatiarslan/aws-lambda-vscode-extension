@@ -49,11 +49,32 @@ function activate(context) {
     vscode.commands.registerCommand('LambdaTreeView.TriggerLambda', (node) => {
         treeView.TriggerLambda(node);
     });
-    vscode.commands.registerCommand('LambdaTreeView.LatestLogs', (node) => {
-        treeView.LatestLogs(node);
+    vscode.commands.registerCommand('LambdaTreeView.ViewLatestLog', (node) => {
+        treeView.ViewLatestLog(node);
     });
     vscode.commands.registerCommand('LambdaTreeView.LambdaView', (node) => {
         treeView.LambdaView(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.PrintLambda', async (node) => {
+        await treeView.PrintLambda(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.UpdateCodes', async (node) => {
+        await treeView.UpdateCodes(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.SetCodePath', async (node) => {
+        await treeView.SetCodePath(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.ViewLog', async (node) => {
+        await treeView.ViewLog(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.RefreshLogs', async (node) => {
+        await treeView.RefreshLogs(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.RemoveTriggerConfig', async (node) => {
+        await treeView.RemoveTriggerConfig(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.AddTriggerConfig', async (node) => {
+        await treeView.AddTriggerConfig(node);
     });
     ui.logToOutput('Aws Lambda Extension activation completed');
 }

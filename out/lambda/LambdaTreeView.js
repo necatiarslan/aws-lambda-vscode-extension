@@ -252,8 +252,8 @@ class LambdaTreeView {
         }
         ui.showInfoMessage('Lambda Triggered Successfully');
     }
-    async LatestLogs(node) {
-        ui.logToOutput('LambdaTreeView.LatestLogs Started');
+    async ViewLatestLog(node) {
+        ui.logToOutput('LambdaTreeView.ViewLatestLog Started');
         if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Lambda) {
             return;
         }
@@ -305,6 +305,51 @@ class LambdaTreeView {
             this.AwsEndPoint = awsEndPointUrl;
         }
         this.SaveState();
+    }
+    async PrintLambda(node) {
+        ui.logToOutput('LambdaTreeView.PrintLambda Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Lambda) {
+            return;
+        }
+        if (!node.Lambda) {
+            return;
+        }
+        if (!node.Region) {
+            return;
+        }
+        let result = await api.GetLambda(node.Region, node.Lambda);
+        if (!result.isSuccessful) {
+            ui.logToOutput("api.GetLambda Error !!!", result.error);
+            ui.showErrorMessage('Get Lambda Error !!!', result.error);
+            return;
+        }
+        ui.logToOutput("api.GetLambda Success !!!");
+        ui.logToOutput("api.GetLambda \n" + JSON.stringify(result.result, null, 4));
+        ui.showInfoMessage('Lambda Details Retrieved Successfully. Check Output window for details');
+    }
+    async UpdateCodes(node) {
+        ui.logToOutput('LambdaTreeView.UpdateCodes Started');
+        ui.showWarningMessage("Work In Progress");
+    }
+    async SetCodePath(node) {
+        ui.logToOutput('LambdaTreeView.SetCodePath Started');
+        ui.showWarningMessage("Work In Progress");
+    }
+    async ViewLog(node) {
+        ui.logToOutput('LambdaTreeView.ViewLog Started');
+        ui.showWarningMessage("Work In Progress");
+    }
+    async RefreshLogs(node) {
+        ui.logToOutput('LambdaTreeView.RefreshLogs Started');
+        ui.showWarningMessage("Work In Progress");
+    }
+    async RemoveTriggerConfig(node) {
+        ui.logToOutput('LambdaTreeView.RemoveTriggerConfig Started');
+        ui.showWarningMessage("Work In Progress");
+    }
+    async AddTriggerConfig(node) {
+        ui.logToOutput('LambdaTreeView.AddTriggerConfig Started');
+        ui.showWarningMessage("Work In Progress");
     }
 }
 exports.LambdaTreeView = LambdaTreeView;

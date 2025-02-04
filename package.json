@@ -88,9 +88,44 @@
         "icon": "$(preview)"
       },
       {
-        "command": "LambdaTreeView.LatestLogs",
-        "title": "Logs",
+        "command": "LambdaTreeView.ViewLatestLog",
+        "title": "Latest Logs",
         "icon": "$(output)"
+      },
+      {
+        "command": "LambdaTreeView.AddTriggerConfig",
+        "title": "Add Trigger Config",
+        "icon": "$(add)"
+      },
+      {
+        "command": "LambdaTreeView.RemoveTriggerConfig",
+        "title": "Add Trigger Config",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "LambdaTreeView.RefreshLogs",
+        "title": "Refresh Logs",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "LambdaTreeView.ViewLog",
+        "title": "View Log",
+        "icon": "$(output)"
+      },
+      {
+        "command": "LambdaTreeView.SetCodePath",
+        "title": "Set Code Path",
+        "icon": "$(folder-library)"
+      },
+      {
+        "command": "LambdaTreeView.UpdateCodes",
+        "title": "Update Codes",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "LambdaTreeView.PrintLambda",
+        "title": "Print Lambda",
+        "icon": "$(lightbulb)"
       },
       {
         "command": "LambdaTreeView.UpdateAwsEndPoint",
@@ -138,22 +173,22 @@
       "view/item/context": [
         {
           "command": "LambdaTreeView.AddToFav",
-          "when": "view == LambdaTreeView",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
           "group": "Filter"
         },
         {
           "command": "LambdaTreeView.DeleteFromFav",
-          "when": "view == LambdaTreeView",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
           "group": "Filter"
         },
         {
           "command": "LambdaTreeView.HideNode",
-          "when": "view == LambdaTreeView",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
           "group": "Filter"
         },
         {
           "command": "LambdaTreeView.UnHideNode",
-          "when": "view == LambdaTreeView",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
           "group": "Filter"
         },
         {
@@ -168,17 +203,47 @@
         },
         {
           "command": "LambdaTreeView.TriggerLambda",
-          "when": "view == LambdaTreeView",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
           "group": "inline"
         },
         {
-          "command": "LambdaTreeView.LambdaView",
-          "when": "view == LambdaTreeView",
+          "command": "LambdaTreeView.ViewLatestLog",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
           "group": "inline"
         },
         {
-          "command": "LambdaTreeView.LatestLogs",
-          "when": "view == LambdaTreeView",
+          "command": "LambdaTreeView.PrintLambda",
+          "when": "view == LambdaTreeView && viewItem == Lambda",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.SetCodePath",
+          "when": "view == LambdaTreeView && viewItem == Code",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.UpdateCodes",
+          "when": "view == LambdaTreeView && viewItem == Code",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.AddTriggerConfig",
+          "when": "view == LambdaTreeView && viewItem == TriggerGroup",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.RemoveTriggerConfig",
+          "when": "view == LambdaTreeView && viewItem == TriggerConfig",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.RefreshLogs",
+          "when": "view == LambdaTreeView && viewItem == LogGroup",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.ViewLog",
+          "when": "view == LambdaTreeView && viewItem == LogStream",
           "group": "inline"
         }
       ]

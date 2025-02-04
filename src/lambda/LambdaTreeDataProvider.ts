@@ -68,7 +68,7 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		for(var item of this.LambdaList)
 		{
 			let treeItem = new LambdaTreeItem(item.Lambda, TreeItemType.Lambda);
-			//treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+			treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 			treeItem.Region = item.Region;
 			treeItem.Lambda = item.Lambda;
 			this.LambdaNodeList.push(treeItem);
@@ -76,7 +76,20 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 	}
 
 	getChildren(node: LambdaTreeItem): Thenable<LambdaTreeItem[]> {
-		let result:LambdaTreeItem[] = this.GetLambdaNodes();
+		let result:LambdaTreeItem[] = [];
+
+		if(!node)
+		{
+			result.push(...this.GetLambdaNodes());
+		}
+		else if(node.TreeItemType === TreeItemType.Lambda)
+		{
+			node.Children.push(new LambdaTreeItem("Code", TreeItemType.Code));
+			node.Children.push(new LambdaTreeItem("Trigger", TreeItemType.TriggerGroup));
+			node.Children.push(new LambdaTreeItem("Logs", TreeItemType.LogGroup));
+
+			result.push(...node.Children);
+		}
 
 		return Promise.resolve(result);
 	}

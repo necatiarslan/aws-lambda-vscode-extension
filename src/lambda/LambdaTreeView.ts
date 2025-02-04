@@ -285,8 +285,8 @@ export class LambdaTreeView {
 		
 	}
 
-	async LatestLogs(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.LatestLogs Started');
+	async ViewLatestLog(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.ViewLatestLog Started');
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
 		if(!node.Lambda) { return; }
@@ -338,5 +338,55 @@ export class LambdaTreeView {
 		}
 		this.SaveState();
 	}
+
+	async PrintLambda(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.PrintLambda Started');
+		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
+		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
+
+		let result = await api.GetLambda(node.Region, node.Lambda);
+		if(!result.isSuccessful)
+		{
+			ui.logToOutput("api.GetLambda Error !!!", result.error);
+			ui.showErrorMessage('Get Lambda Error !!!', result.error);
+			return;
+		}
+		ui.logToOutput("api.GetLambda Success !!!");
+		ui.logToOutput("api.GetLambda \n" + JSON.stringify(result.result, null, 4));
+		ui.showInfoMessage('Lambda Details Retrieved Successfully. Check Output window for details');
+
+	}
+
+	async UpdateCodes(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.UpdateCodes Started');
+		ui.showWarningMessage("Work In Progress");
+	}
+
+	async SetCodePath(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.SetCodePath Started');
+		ui.showWarningMessage("Work In Progress");
+	}
+
+	async ViewLog(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.ViewLog Started');
+		ui.showWarningMessage("Work In Progress");
+	}
+
+	async RefreshLogs(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.RefreshLogs Started');
+		ui.showWarningMessage("Work In Progress");
+	}
+
+	async RemoveTriggerConfig(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.RemoveTriggerConfig Started');
+		ui.showWarningMessage("Work In Progress");
+	}
+
+	async AddTriggerConfig(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.AddTriggerConfig Started');
+		ui.showWarningMessage("Work In Progress");
+	}
+
 
 }

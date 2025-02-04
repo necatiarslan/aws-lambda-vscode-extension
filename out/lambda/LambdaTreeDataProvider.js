@@ -48,14 +48,23 @@ class LambdaTreeDataProvider {
         this.LambdaNodeList = [];
         for (var item of this.LambdaList) {
             let treeItem = new LambdaTreeItem_1.LambdaTreeItem(item.Lambda, LambdaTreeItem_1.TreeItemType.Lambda);
-            //treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+            treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.Region = item.Region;
             treeItem.Lambda = item.Lambda;
             this.LambdaNodeList.push(treeItem);
         }
     }
     getChildren(node) {
-        let result = this.GetLambdaNodes();
+        let result = [];
+        if (!node) {
+            result.push(...this.GetLambdaNodes());
+        }
+        else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.Lambda) {
+            node.Children.push(new LambdaTreeItem_1.LambdaTreeItem("Code", LambdaTreeItem_1.TreeItemType.Code));
+            node.Children.push(new LambdaTreeItem_1.LambdaTreeItem("Trigger", LambdaTreeItem_1.TreeItemType.TriggerGroup));
+            node.Children.push(new LambdaTreeItem_1.LambdaTreeItem("Logs", LambdaTreeItem_1.TreeItemType.LogGroup));
+            result.push(...node.Children);
+        }
         return Promise.resolve(result);
     }
     GetLambdaNodes() {
