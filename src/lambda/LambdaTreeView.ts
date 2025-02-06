@@ -4,6 +4,7 @@ import { LambdaTreeItem, TreeItemType } from './LambdaTreeItem';
 import { LambdaTreeDataProvider } from './LambdaTreeDataProvider';
 import * as ui from '../common/UI';
 import * as api from '../common/API';
+import { CloudWatchLogView } from '../cloudwatch/CloudWatchLogView';
 
 export class LambdaTreeView {
 
@@ -51,11 +52,7 @@ export class LambdaTreeView {
 
 	LoadTreeItems(){
 		ui.logToOutput('LambdaTreeView.loadTreeItems Started');
-
-		//this.treeDataProvider.LoadRegionNodeList();
-		//this.treeDataProvider.LoadLogGroupNodeList();
-		//this.treeDataProvider.LoadLogStreamNodeList();
-		//this.treeDataProvider.Refresh();
+		this.treeDataProvider.Refresh();
 		this.SetViewTitle();
 	}
 
@@ -264,11 +261,21 @@ export class LambdaTreeView {
 	async TriggerLambda(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.TriggerLambda Started');
 		
-		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
+		if(node.TreeItemType !== TreeItemType.Lambda && node.TreeItemType !== TreeItemType.TriggerConfig) { return;}
 		if(!node.Lambda) { return; }
 		if(!node.Region) { return; }
 
-		let result = await api.TriggerLambda(node.Region, node.Lambda, {});
+		let config = await vscode.window.showInputBox({ placeHolder: 'Enter Trigger Config or leave empty' });
+		if(config && api.isJsonString(config)){
+			ui.showInfoMessage('Config should be a valid JSON');
+			return; 
+		}
+		let param: {} = {}
+		if(config)
+		{
+			param = api.ParseJson(config)
+		}
+		let result = await api.TriggerLambda(node.Region, node.Lambda, param);
 		if(!result.isSuccessful)
 		{
 			ui.logToOutput("api.TriggerLambda Error !!!", result.error);
@@ -276,9 +283,18 @@ export class LambdaTreeView {
 			return;
 		}
 		ui.logToOutput("api.TriggerLambda Success !!!");
+
+		// Convert Uint8Array to string
+		const payloadString = new TextDecoder("utf-8").decode(result.result.Payload);
+		// Parse the JSON string
+		const parsedPayload = JSON.parse(payloadString);
+		// Pretty-print the JSON with 2-space indentation
+		let payload = JSON.stringify(parsedPayload, null, 2)
+
 		if(result.result && result.result.Payload)
 		{
-			ui.logToOutput("api.TriggerLambda PayLoad \n" + result.result.Payload.toString());
+			ui.logToOutput("api.TriggerLambda PayLoad \n" + payload, undefined, true);
+			this.ViewLatestLog(node)
 		}
 		
 		ui.showInfoMessage('Lambda Triggered Successfully');
@@ -292,15 +308,15 @@ export class LambdaTreeView {
 		if(!node.Lambda) { return; }
 		if(!node.Region) { return; }
 
-		let resultLogs = await api.GetLambdaLogs(node.Region, node.Lambda);
+		let resultLogs = await api.GetLatestLambdaLogs(node.Region, node.Lambda);
 		if(!resultLogs.isSuccessful)
 		{
-			ui.logToOutput("api.GetLambdaLogs Error !!!", resultLogs.error);
+			ui.logToOutput("api.GetLatestLambdaLogs Error !!!", resultLogs.error);
 			ui.showErrorMessage('Get Lambda Logs Error !!!', resultLogs.error);
 			return;
 		}
-		ui.logToOutput("api.GetLambdaLogs Success !!!");
-		ui.logToOutput("api.GetLambdaLogs Logs \n" + resultLogs.result);
+		ui.logToOutput("api.GetLatestLambdaLogs Success !!!");
+		ui.logToOutput("api.GetLatestLambdaLogs Logs \n" + resultLogs.result, undefined, true);
 		ui.showInfoMessage('Lambda Latest Logs Retrieved Successfully');
 		
 	}
@@ -370,12 +386,32 @@ export class LambdaTreeView {
 
 	async ViewLog(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.ViewLog Started');
-		ui.showWarningMessage("Work In Progress");
+		if(node.TreeItemType !== TreeItemType.LogStream) { return;}
+		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
+		if(!node.LogStreamName) { return; }
+
+		const logGroupName = `/aws/lambda/${node.Lambda}`;
+		CloudWatchLogView.Render(this.context.extensionUri, node.Region, logGroupName, node.LogStreamName);
 	}
 
-	async RefreshLogs(node: LambdaTreeItem) {
+	async RefreshLogStreams(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.RefreshLogs Started');
-		ui.showWarningMessage("Work In Progress");
+		
+		if(node.TreeItemType !== TreeItemType.LogGroup) { return;}
+		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
+
+		let resultLogs = await api.GetLatestLambdaLogStreams(node.Region, node.Lambda);
+		if(!resultLogs.isSuccessful)
+		{
+			ui.logToOutput("api.GetLatestLambdaLogStreams Error !!!", resultLogs.error);
+			ui.showErrorMessage('Get Lambda Logs Error !!!', resultLogs.error);
+			return;
+		}
+		ui.logToOutput("api.GetLatestLambdaLogStreams Success !!!");
+		this.treeDataProvider.AddLogStreams(node, resultLogs.result)
+		ui.showInfoMessage('Lambda Logs Retrieved Successfully');
 	}
 
 	async RemoveTriggerConfig(node: LambdaTreeItem) {

@@ -68,7 +68,7 @@ function activate(context) {
         await treeView.ViewLog(node);
     });
     vscode.commands.registerCommand('LambdaTreeView.RefreshLogs', async (node) => {
-        await treeView.RefreshLogs(node);
+        await treeView.RefreshLogStreams(node);
     });
     vscode.commands.registerCommand('LambdaTreeView.RemoveTriggerConfig', async (node) => {
         await treeView.RemoveTriggerConfig(node);

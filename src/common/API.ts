@@ -2,7 +2,7 @@
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import { fromIni } from "@aws-sdk/credential-provider-ini";
 import { LambdaClient, ListFunctionsCommand } from "@aws-sdk/client-lambda";
-import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
+import { CloudWatchLogsClient, OutputLogEvent } from "@aws-sdk/client-cloudwatch-logs";
 import { IAMClient } from "@aws-sdk/client-iam";
 import * as ui from "./UI";
 import { MethodResult } from './MethodResult';
@@ -150,6 +150,18 @@ import {
   InvokeCommandInput,
 } from "@aws-sdk/client-lambda";
 
+export function isJsonString(jsonString: string): boolean {
+  try {
+    var json = ParseJson(jsonString);
+    return (typeof json === 'object');
+  } catch (e) {
+    return false;
+  }
+}
+export function ParseJson(jsonString: string) {
+  return JSON.parse(jsonString);
+}
+
 export async function TriggerLambda(
   Region: string,
   LambdaName: string,
@@ -189,7 +201,7 @@ import {
   GetLogEventsCommand,
 } from "@aws-sdk/client-cloudwatch-logs";
 
-export async function GetLambdaLogs(
+export async function GetLatestLambdaLogs(
   Region: string,
   Lambda: string
 ): Promise<MethodResult<string>> {
@@ -257,12 +269,137 @@ export async function GetLambdaLogs(
   } catch (error: any) {
     result.isSuccessful = false;
     result.error = error;
-    ui.showErrorMessage("api.GetLambdaLogs Error !!!", error);
-    ui.logToOutput("api.GetLambdaLogs Error !!!", error);
+    ui.showErrorMessage("api.GetLatestLambdaLogs Error !!!", error);
+    ui.logToOutput("api.GetLatestLambdaLogs Error !!!", error);
     return result;
   }
 }
 
+export async function GetLatestLambdaLogStreams(
+  Region: string,
+  Lambda: string
+): Promise<MethodResult<string[]>> {
+  ui.logToOutput("Getting log streams for Lambda function: " + Lambda);
+  let result: MethodResult<string[]> = new MethodResult<string[]>();
+  result.result = [];
+
+  try {
+    // Get the log group name
+    const logGroupName = `/aws/lambda/${Lambda}`;
+    const cloudwatchlogs = await GetCloudWatchClient(Region);
+
+    // Get the streams sorted by the latest event time
+    const describeLogStreamsCommand = new DescribeLogStreamsCommand({
+      logGroupName,
+      orderBy: "LastEventTime",
+      descending: true,
+      limit: 1,
+    });
+
+    const streamsResponse = await cloudwatchlogs.send(describeLogStreamsCommand);
+
+    if (streamsResponse.logStreams && streamsResponse.logStreams.length > 0) {
+      let logStreamNames = streamsResponse.logStreams.slice(0, 10).map(stream => stream.logStreamName || 'invalid log stream');
+      result.result = logStreamNames;
+    }
+  
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.GetLatestLambdaLogStreams Error !!!", error);
+    ui.logToOutput("api.GetLatestLambdaLogStreams Error !!!", error);
+    return result;
+  }
+}
+
+export async function GetLambdaLogs(
+  Region: string,
+  Lambda: string,
+  LogStreamName: string
+): Promise<MethodResult<string>> {
+  ui.logToOutput("Getting logs for Lambda function: " + Lambda + " LogStream " + LogStreamName);
+  let result: MethodResult<string> = new MethodResult<string>();
+
+  try {
+    // Get the log group name
+    const logGroupName = `/aws/lambda/${Lambda}`;
+    const cloudwatchlogs = await GetCloudWatchClient(Region);
+
+    const getLogEventsCommand = new GetLogEventsCommand({
+      logGroupName: logGroupName,
+      logStreamName: LogStreamName,
+      limit: 50, // Adjust the limit as needed
+      startFromHead: true, // Start from the beginning of the log stream
+    });
+
+    const eventsResponse = await cloudwatchlogs.send(getLogEventsCommand);
+
+    if (!eventsResponse.events || eventsResponse.events.length === 0) {
+      result.isSuccessful = false;
+      result.error = new Error("No log events found for this Lambda function." + Lambda + " LogStream " + LogStreamName);
+      ui.showErrorMessage("No log events found for this Lambda function."+ Lambda + " LogStream " + LogStreamName, result.error);
+      ui.logToOutput("No log events found for this Lambda function."+ Lambda + " LogStream " + LogStreamName);
+      return result;
+    }
+
+    // Concatenate log messages
+    result.result = eventsResponse.events
+      .map((event) => event.message)
+      .filter((msg) => msg)
+      .join("\n");
+
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.GetLatestLambdaLogs Error !!!", error);
+    ui.logToOutput("api.GetLatestLambdaLogs Error !!!", error);
+    return result;
+  }
+}
+
+export async function GetLogEvents(
+  Region: string,
+  LogGroupName: string,
+  LogStreamName: string,
+): Promise<MethodResult<OutputLogEvent[]>> {
+  ui.logToOutput("Getting logs from LogGroupName: " + LogGroupName + " LogStreamName: " + LogStreamName);
+  let result: MethodResult<OutputLogEvent[]> = new MethodResult<OutputLogEvent[]>();
+  result.result = [];
+  try {
+    // Get the log group name
+    const cloudwatchlogs = await GetCloudWatchClient(Region);
+
+    const getLogEventsCommand = new GetLogEventsCommand({
+      logGroupName: LogGroupName,
+      logStreamName: LogStreamName,
+      limit: 50, // Adjust the limit as needed
+      startFromHead: true, // Start from the beginning of the log stream
+    });
+
+    const eventsResponse = await cloudwatchlogs.send(getLogEventsCommand);
+
+    if (!eventsResponse.events || eventsResponse.events.length === 0) {
+      result.isSuccessful = true;
+      return result;
+    }
+
+    // Concatenate log messages
+    result.result.push(...eventsResponse.events);
+
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.GetLogEvents Error !!!", error);
+    ui.logToOutput("api.GetLogEvents Error !!!", error);
+    return result;
+  }
+}
 
 import {
   GetFunctionCommand,

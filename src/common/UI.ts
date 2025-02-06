@@ -37,7 +37,7 @@ export function showOutputMessage(message: any, popupMessage: string = "Results 
   }
 }
 
-export function logToOutput(message: any, error?: Error): void {
+export function logToOutput(message: any, error?: Error, focus?:boolean): void {
   let now = new Date().toLocaleString();
 
   if (!logsOutputChannel) {
@@ -58,6 +58,11 @@ export function logToOutput(message: any, error?: Error): void {
     {
       logsOutputChannel.appendLine(error.stack);
     }
+  }
+
+  if(focus)
+  {
+    logsOutputChannel.show();
   }
 }
 

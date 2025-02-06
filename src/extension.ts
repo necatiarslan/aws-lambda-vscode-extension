@@ -89,7 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('LambdaTreeView.RefreshLogs', async (node: LambdaTreeItem) => {
-		await treeView.RefreshLogs(node);
+		await treeView.RefreshLogStreams(node);
 	});
 
 	vscode.commands.registerCommand('LambdaTreeView.RemoveTriggerConfig', async (node: LambdaTreeItem) => {

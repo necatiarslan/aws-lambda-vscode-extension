@@ -31,7 +31,7 @@ function showOutputMessage(message, popupMessage = "Results are printed to OUTPU
     }
 }
 exports.showOutputMessage = showOutputMessage;
-function logToOutput(message, error) {
+function logToOutput(message, error, focus) {
     let now = new Date().toLocaleString();
     if (!logsOutputChannel) {
         logsOutputChannel = vscode.window.createOutputChannel("AwsLambda-Log");
@@ -48,6 +48,9 @@ function logToOutput(message, error) {
         if (error.stack) {
             logsOutputChannel.appendLine(error.stack);
         }
+    }
+    if (focus) {
+        logsOutputChannel.show();
     }
 }
 exports.logToOutput = logToOutput;

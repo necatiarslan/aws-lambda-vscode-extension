@@ -1,0 +1,72 @@
+table {
+    width: 100%;
+    border: 0px solid;
+    border-spacing: 0;
+    border-collapse: collapse;
+  }
+
+  tr:nth-child(even) {
+    background-color: #2a2d2e;
+  }
+  
+  th {
+    background-color: #3c3c3c;
+    color: white;
+    padding: 5px;
+    font-size: 12px;
+    font: bold;
+  }
+  
+  td {
+    color: #d4d4d4;
+    padding: 5px;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    font-weight: normal;
+    font-size: 12px;
+    vertical-align: top;
+  }
+  
+  vscode-panels {
+    border: 0px;
+    border-radius: 1px;
+  }
+  
+  vscode-text-field {
+    border: 1px;
+    border-color: #2a2d2e;
+    font-size: 12px;
+  }
+  
+  vscode-text-area {
+    border: 1px;
+    border-color: #2a2d2e;
+    font-size: 12px;
+  }
+  
+  section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .color_code_red {
+    color: red
+  }
+
+  .color_code_yellow {
+    color: yellow
+  }
+
+  .color_code_blue {
+    color:  #569cd6;
+
+  }
+
+  .color_code_green {
+    color: #6a9955
+  }
+
+  .color_code_search_result {
+    background-color: yellow;
+    color: darkred;
+  }

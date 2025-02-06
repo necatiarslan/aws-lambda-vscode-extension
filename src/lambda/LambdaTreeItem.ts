@@ -2,21 +2,22 @@
 import * as vscode from 'vscode';
 
 export class LambdaTreeItem extends vscode.TreeItem {
-	public IsFav: boolean = false;
-	public TreeItemType:TreeItemType;
-	public Text:string;
-	public Lambda:string | undefined;
-	public Region:string | undefined;
-	public Shortcut:string | undefined;
-	public Parent:LambdaTreeItem | undefined;
-	public Children:LambdaTreeItem[] = [];
-	public IsHidden: boolean = false;
+	public IsFav: boolean = false
+	public TreeItemType:TreeItemType
+	public Text:string
+	public Lambda:string | undefined
+	public Region:string | undefined
+	public LogStreamName:string | undefined
+	public Parent:LambdaTreeItem | undefined
+	public Children:LambdaTreeItem[] = []
+	public IsHidden: boolean = false
+	public TriggerConfigPath: string | undefined
 
 	constructor(text:string, treeItemType:TreeItemType) {
-		super(text);
-		this.Text = text;
-		this.TreeItemType = treeItemType;
-		this.refreshUI();
+		super(text)
+		this.Text = text
+		this.TreeItemType = treeItemType
+		this.refreshUI()
 	}
 
 	public refreshUI() {
