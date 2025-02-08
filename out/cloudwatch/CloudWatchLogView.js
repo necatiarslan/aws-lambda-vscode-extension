@@ -12,6 +12,7 @@ class CloudWatchLogView {
         this.LogEvents = [];
         this.FilterText = "";
         this.HideText = "";
+        this.SearchText = "";
         ui.logToOutput('CloudWatchLogView.constructor Started');
         this.Region = Region;
         this.LogGroup = LogGroup;
@@ -100,8 +101,18 @@ class CloudWatchLogView {
         //result=result.replace(/(\d{2}\/\d{2}\/\d{4})/g, (match, capture1) => `<span class="color_code_green">${capture1}</span>`);
         //result=result.replace(/(\d{2}:\d{2}:\d{2})/g, (match, capture1) => `<span class="color_code_green">${capture1}</span>`);
         if (this.FilterText) {
-            const regex = new RegExp("(" + this.FilterText + ")", "i");
-            result = result.replace(regex, (match, capture1) => `<span class="color_code_search_result">${capture1}</span>`);
+            const filterTextArray = this.FilterText.split(",");
+            for (var i = 0; i < filterTextArray.length; i++) {
+                const regex = new RegExp("(" + filterTextArray[i].trim() + ")", "i");
+                result = result.replace(regex, (match, capture1) => `<span class="color_code_search_result">${capture1}</span>`);
+            }
+        }
+        if (this.SearchText) {
+            const filterTextArray = this.SearchText.split(",");
+            for (var i = 0; i < filterTextArray.length; i++) {
+                const regex = new RegExp("(" + filterTextArray[i].trim() + ")", "i");
+                result = result.replace(regex, (match, capture1) => `<span class="color_code_search_result">${capture1}</span>`);
+            }
         }
         return result;
     }
@@ -158,11 +169,14 @@ class CloudWatchLogView {
                     <vscode-button id="export_logs" >Export</vscode-button>
                 </td>
                 <td style="text-align:right">
-                    <vscode-textfield id="hide_text" placeholder="Hide" value="${this.HideText}">
+                    <vscode-textfield id="search_text" placeholder="Search" value="${this.SearchText}" style="width: 30ch; margin: 0;" >
                         <vscode-icon slot="content-before" name="search" title="search"></vscode-icon>
                     </vscode-textfield>
-                    <vscode-textfield id="search_text" placeholder="Filter" value="${this.FilterText}" >
-                        <vscode-icon slot="content-before" name="search" title="search"></vscode-icon>
+                    <vscode-textfield id="filter_text" placeholder="Filter" value="${this.FilterText}" style="width: 30ch; margin: 0;" >
+                        <vscode-icon slot="content-before" name="filter" title="filter"></vscode-icon>
+                    </vscode-textfield>
+                    <vscode-textfield id="hide_text" placeholder="Hide" value="${this.HideText}" style="width: 30ch; margin: 0;" >
+                        <vscode-icon slot="content-before" name="eye-closed" title="eye-closed"></vscode-icon>
                     </vscode-textfield>
                 </td>
             </tr>
@@ -225,8 +239,9 @@ class CloudWatchLogView {
             ui.logToOutput('CloudWatchLogView._setWebviewMessageListener Message Received ' + message.command);
             switch (command) {
                 case "refresh":
-                    this.FilterText = message.search_text;
+                    this.FilterText = message.filter_text;
                     this.HideText = message.hide_text;
+                    this.SearchText = message.search_text;
                     this.LoadLogs();
                     ;
                     this.RenderHtml();
