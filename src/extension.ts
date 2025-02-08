@@ -96,12 +96,12 @@ export function activate(context: vscode.ExtensionContext) {
 		await treeView.RefreshLogStreams(node);
 	});
 
-	vscode.commands.registerCommand('LambdaTreeView.RemoveTriggerConfig', async (node: LambdaTreeItem) => {
-		await treeView.RemoveTriggerConfig(node);
+	vscode.commands.registerCommand('LambdaTreeView.RemovePayloadPath', async (node: LambdaTreeItem) => {
+		await treeView.RemovePayloadPath(node);
 	});
 
-	vscode.commands.registerCommand('LambdaTreeView.AddTriggerConfig', async (node: LambdaTreeItem) => {
-		await treeView.AddTriggerConfig(node);
+	vscode.commands.registerCommand('LambdaTreeView.AddPayloadPath', async (node: LambdaTreeItem) => {
+		await treeView.AddPayloadPath(node);
 	});
 
 	ui.logToOutput('Aws Lambda Extension activation completed');

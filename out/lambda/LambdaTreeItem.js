@@ -7,6 +7,8 @@ class LambdaTreeItem extends vscode.TreeItem {
     constructor(text, treeItemType) {
         super(text);
         this.IsFav = false;
+        this.Lambda = "";
+        this.Region = "";
         this.Children = [];
         this.IsHidden = false;
         this.Text = text;
@@ -45,9 +47,21 @@ class LambdaTreeItem extends vscode.TreeItem {
             this.iconPath = new vscode.ThemeIcon('run-all');
             this.contextValue = "TriggerGroup";
         }
-        else if (this.TreeItemType === TreeItemType.TriggerConfig) {
-            this.iconPath = new vscode.ThemeIcon('run-all');
-            this.contextValue = "TriggerConfig";
+        else if (this.TreeItemType === TreeItemType.TriggerSavedPayload) {
+            this.iconPath = new vscode.ThemeIcon('bracket');
+            this.contextValue = "TriggerSavedPayload";
+        }
+        else if (this.TreeItemType === TreeItemType.TriggerWithPayload) {
+            this.iconPath = new vscode.ThemeIcon('bracket-dot');
+            this.contextValue = "TriggerWithPayload";
+        }
+        else if (this.TreeItemType === TreeItemType.TriggerFilePayload) {
+            this.iconPath = new vscode.ThemeIcon('file');
+            this.contextValue = "TriggerFilePayload";
+        }
+        else if (this.TreeItemType === TreeItemType.TriggerNoPayload) {
+            this.iconPath = new vscode.ThemeIcon('bracket-error');
+            this.contextValue = "TriggerNoPayload";
         }
         else if (this.TreeItemType === TreeItemType.LogGroup) {
             this.iconPath = new vscode.ThemeIcon('output');
@@ -109,7 +123,10 @@ var TreeItemType;
     TreeItemType[TreeItemType["LogGroup"] = 3] = "LogGroup";
     TreeItemType[TreeItemType["LogStream"] = 4] = "LogStream";
     TreeItemType[TreeItemType["TriggerGroup"] = 5] = "TriggerGroup";
-    TreeItemType[TreeItemType["TriggerConfig"] = 6] = "TriggerConfig";
+    TreeItemType[TreeItemType["TriggerSavedPayload"] = 6] = "TriggerSavedPayload";
     TreeItemType[TreeItemType["CodePath"] = 7] = "CodePath";
+    TreeItemType[TreeItemType["TriggerNoPayload"] = 8] = "TriggerNoPayload";
+    TreeItemType[TreeItemType["TriggerWithPayload"] = 9] = "TriggerWithPayload";
+    TreeItemType[TreeItemType["TriggerFilePayload"] = 10] = "TriggerFilePayload";
 })(TreeItemType = exports.TreeItemType || (exports.TreeItemType = {}));
 //# sourceMappingURL=LambdaTreeItem.js.map

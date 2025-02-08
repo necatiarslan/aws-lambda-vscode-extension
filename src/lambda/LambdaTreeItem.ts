@@ -5,14 +5,15 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public IsFav: boolean = false
 	public TreeItemType:TreeItemType
 	public Text:string
-	public Lambda:string | undefined
-	public Region:string | undefined
+	public Lambda:string = ""
+	public Region:string = ""
 	public LogStreamName:string | undefined
 	public Parent:LambdaTreeItem | undefined
 	public Children:LambdaTreeItem[] = []
 	public IsHidden: boolean = false
 	public TriggerConfigPath: string | undefined
 	private codePath: string | undefined;
+	public PayloadPath: string | undefined;
 
 	constructor(text:string, treeItemType:TreeItemType) {
 		super(text)
@@ -58,10 +59,25 @@ export class LambdaTreeItem extends vscode.TreeItem {
 			this.iconPath = new vscode.ThemeIcon('run-all');
 			this.contextValue = "TriggerGroup"
 		}
-		else if(this.TreeItemType === TreeItemType.TriggerConfig)
+		else if(this.TreeItemType === TreeItemType.TriggerSavedPayload)
 		{
-			this.iconPath = new vscode.ThemeIcon('run-all');
-			this.contextValue = "TriggerConfig"
+			this.iconPath = new vscode.ThemeIcon('bracket');
+			this.contextValue = "TriggerSavedPayload"
+		}
+		else if(this.TreeItemType === TreeItemType.TriggerWithPayload)
+		{
+			this.iconPath = new vscode.ThemeIcon('bracket-dot');
+			this.contextValue = "TriggerWithPayload"
+		}
+		else if(this.TreeItemType === TreeItemType.TriggerFilePayload)
+		{
+			this.iconPath = new vscode.ThemeIcon('file');
+			this.contextValue = "TriggerFilePayload"
+		}
+		else if(this.TreeItemType === TreeItemType.TriggerNoPayload)
+		{
+			this.iconPath = new vscode.ThemeIcon('bracket-error');
+			this.contextValue = "TriggerNoPayload"
 		}
 		else if(this.TreeItemType === TreeItemType.LogGroup)
 		{
@@ -142,6 +158,9 @@ export enum TreeItemType{
 	LogGroup = 3,
 	LogStream = 4,
 	TriggerGroup = 5,
-	TriggerConfig = 6,
+	TriggerSavedPayload = 6,
 	CodePath = 7,
+	TriggerNoPayload= 8,
+	TriggerWithPayload= 9,
+	TriggerFilePayload= 10,
 }

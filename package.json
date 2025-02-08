@@ -93,13 +93,13 @@
         "icon": "$(output)"
       },
       {
-        "command": "LambdaTreeView.AddTriggerConfig",
-        "title": "Add Trigger Config",
+        "command": "LambdaTreeView.AddPayloadPath",
+        "title": "Add Payload File",
         "icon": "$(add)"
       },
       {
-        "command": "LambdaTreeView.RemoveTriggerConfig",
-        "title": "Add Trigger Config",
+        "command": "LambdaTreeView.RemovePayloadPath",
+        "title": "Remove Paylod File",
         "icon": "$(trash)"
       },
       {
@@ -208,7 +208,7 @@
         },
         {
           "command": "LambdaTreeView.TriggerLambda",
-          "when": "view == LambdaTreeView && (viewItem == Lambda || viewItem == TriggerConfig)",
+          "when": "view == LambdaTreeView && (viewItem == Lambda || viewItem == TriggerConfig || viewItem == TriggerSavedPayload || viewItem == TriggerWithPayload || viewItem == TriggerFilePayload || viewItem == TriggerNoPayload)",
           "group": "inline"
         },
         {
@@ -237,13 +237,13 @@
           "group": "inline"
         },
         {
-          "command": "LambdaTreeView.AddTriggerConfig",
+          "command": "LambdaTreeView.AddPayloadPath",
           "when": "view == LambdaTreeView && viewItem == TriggerGroup",
           "group": "inline"
         },
         {
-          "command": "LambdaTreeView.RemoveTriggerConfig",
-          "when": "view == LambdaTreeView && viewItem == TriggerConfig",
+          "command": "LambdaTreeView.RemovePayloadPath",
+          "when": "view == LambdaTreeView && viewItem == TriggerFilePayload",
           "group": "inline"
         },
         {

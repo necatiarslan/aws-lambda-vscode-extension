@@ -90,11 +90,22 @@ class LambdaTreeDataProvider {
         triggerItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
         triggerItem.Parent = treeItem;
         treeItem.Children.push(triggerItem);
-        let triggerParam = new LambdaTreeItem_1.LambdaTreeItem("w/ Param", LambdaTreeItem_1.TreeItemType.TriggerConfig);
-        triggerParam.Lambda = treeItem.Lambda;
-        triggerParam.Region = treeItem.Region;
-        triggerParam.Parent = triggerItem;
-        triggerItem.Children.push(triggerParam);
+        let triggerWithPayload = new LambdaTreeItem_1.LambdaTreeItem("With Paylod", LambdaTreeItem_1.TreeItemType.TriggerWithPayload);
+        triggerWithPayload.Lambda = treeItem.Lambda;
+        triggerWithPayload.Region = treeItem.Region;
+        triggerWithPayload.Parent = triggerItem;
+        triggerItem.Children.push(triggerWithPayload);
+        let triggerWithoutPayload = new LambdaTreeItem_1.LambdaTreeItem("Without Paylod", LambdaTreeItem_1.TreeItemType.TriggerNoPayload);
+        triggerWithoutPayload.Lambda = treeItem.Lambda;
+        triggerWithoutPayload.Region = treeItem.Region;
+        triggerWithoutPayload.Parent = triggerItem;
+        triggerItem.Children.push(triggerWithoutPayload);
+        for (var i = 0; i < LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList.length; i++) {
+            if (LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].Region === Region
+                && LambdaTreeView_1.LambdaTreeView.Current.CodePathList[i].Lambda === Lambda) {
+                this.AddNewPayloadPathNode(triggerItem, LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].PayloadPath);
+            }
+        }
         let logsItem = new LambdaTreeItem_1.LambdaTreeItem("Logs", LambdaTreeItem_1.TreeItemType.LogGroup);
         logsItem.Lambda = treeItem.Lambda;
         logsItem.Region = treeItem.Region;
@@ -102,6 +113,51 @@ class LambdaTreeDataProvider {
         logsItem.Parent = treeItem;
         treeItem.Children.push(logsItem);
         return treeItem;
+    }
+    AddPayloadPath(node, PayloadPath) {
+        for (var i = 0; i < LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList.length; i++) {
+            if (LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].Region === node.Region
+                && LambdaTreeView_1.LambdaTreeView.Current.CodePathList[i].Lambda === node.Lambda
+                && LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].PayloadPath === PayloadPath) {
+                return;
+            }
+        }
+        this.AddNewPayloadPathNode(node, PayloadPath);
+        LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList.push({ Region: node.Region, Lambda: node.Lambda, PayloadPath: PayloadPath });
+        this.Refresh();
+    }
+    AddNewPayloadPathNode(node, PayloadPath) {
+        let fileName = PayloadPath.split("/").pop();
+        if (!fileName) {
+            fileName = PayloadPath;
+        }
+        let treeItem = new LambdaTreeItem_1.LambdaTreeItem(fileName, LambdaTreeItem_1.TreeItemType.TriggerFilePayload);
+        treeItem.Region = node.Region;
+        treeItem.Lambda = node.Lambda;
+        treeItem.PayloadPath = PayloadPath;
+        treeItem.Parent = node;
+        node.Children.push(treeItem);
+    }
+    RemovePayloadPath(node) {
+        if (!node.Parent) {
+            return;
+        }
+        for (var i = 0; i < LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList.length; i++) {
+            if (LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].Region === node.Region
+                && LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].Lambda === node.Lambda
+                && LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].PayloadPath === node.PayloadPath) {
+                LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList.splice(i, 1);
+            }
+        }
+        let parentNode = node.Parent;
+        for (var i = 0; i < parentNode.Children.length; i++) {
+            if (parentNode.Children[i].Region === node.Region
+                && parentNode.Children[i].Lambda === node.Lambda
+                && parentNode.Children[i].PayloadPath === node.PayloadPath) {
+                parentNode.Children.splice(i, 1);
+            }
+        }
+        this.Refresh();
     }
     AddCodePath(Region, Lambda, CodePath) {
         //remove old

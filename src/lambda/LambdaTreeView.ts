@@ -19,6 +19,7 @@ export class LambdaTreeView {
 	public AwsEndPoint: string | undefined;
 	public LambdaList: {Region: string, Lambda: string}[] = [];
 	public CodePathList: {Region: string, Lambda: string, CodePath: string}[] = [];
+	public PayloadPathList: {Region: string, Lambda: string, PayloadPath: string}[] = [];
 
 
 	constructor(context: vscode.ExtensionContext) {
@@ -136,6 +137,7 @@ export class LambdaTreeView {
 			this.context.globalState.update('ShowHiddenNodes', this.isShowHiddenNodes);
 			this.context.globalState.update('LambdaList', this.LambdaList);
 			this.context.globalState.update('CodePathList', this.CodePathList);
+			this.context.globalState.update('PayloadPathList', this.PayloadPathList);
 			this.context.globalState.update('AwsEndPoint', this.AwsEndPoint);
 
 			ui.logToOutput("LambdaTreeView.saveState Successfull");
@@ -202,6 +204,9 @@ export class LambdaTreeView {
 
 			let CodePathListTemp:{Region: string, Lambda: string, CodePath: string}[] | undefined  = this.context.globalState.get('CodePathList');
 			if(CodePathListTemp){ this.CodePathList = CodePathListTemp; }
+
+			let PayloadPathListTemp:{Region: string, Lambda: string, PayloadPath: string}[] | undefined  = this.context.globalState.get('PayloadPathList');
+			if(PayloadPathListTemp){ this.PayloadPathList = PayloadPathListTemp; }
 		} 
 		catch (error:any) 
 		{
@@ -260,8 +265,6 @@ export class LambdaTreeView {
 		ui.logToOutput('LambdaTreeView.RemoveLambda Started');
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
 
 		this.treeDataProvider.RemoveLambda(node.Region, node.Lambda);		
 		this.SaveState();
@@ -271,7 +274,6 @@ export class LambdaTreeView {
 		ui.logToOutput('LambdaTreeView.Goto Started');
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
-		if(!node.Lambda) { return; }
 
 		//vscode.commands.executeCommand('vscode.openWith', vscode.Uri.parse('https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions/' + node.Lambda), "external");
 		ui.showInfoMessage("Work In Progress");
@@ -281,8 +283,6 @@ export class LambdaTreeView {
 	async LambdaView(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.LambdaView Started');
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
 
 		ui.showInfoMessage('Work In Progress');
 	}
@@ -290,20 +290,46 @@ export class LambdaTreeView {
 	async TriggerLambda(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.TriggerLambda Started');
 		
-		if(node.TreeItemType !== TreeItemType.Lambda && node.TreeItemType !== TreeItemType.TriggerConfig) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
-
-		let config = await vscode.window.showInputBox({ placeHolder: 'Enter Trigger Config or leave empty' });
-		if(config && api.isJsonString(config)){
-			ui.showInfoMessage('Config should be a valid JSON');
-			return; 
-		}
+		//if(node.TreeItemType !== TreeItemType.Lambda && node.TreeItemType !== TreeItemType.TriggerSavedPayload) { return;}
+		
 		let param: {} = {}
-		if(config)
+
+		if(node.TreeItemType === TreeItemType.TriggerNoPayload)
 		{
-			param = api.ParseJson(config)
+			param = {}
 		}
+		else if(node.TreeItemType === TreeItemType.TriggerFilePayload)
+		{
+			if(!node.PayloadPath) {
+				ui.showWarningMessage('Payload Path is not set');
+				return; 
+			}
+
+			let payload = await vscode.workspace.openTextDocument(node.PayloadPath);
+			if(payload===undefined){ 
+				ui.showWarningMessage('File not found: ' + node.PayloadPath);
+				return; 
+			}
+			if(!api.isJsonString(payload.getText())){
+				ui.showWarningMessage('File content is not a valid JSON: ' + node.PayloadPath);
+				return; 
+			}
+			param = api.ParseJson(payload.getText())
+		}
+		else
+		{
+			let config = await vscode.window.showInputBox({ placeHolder: 'Enter Payload Json or leave empty' });
+			if(config===undefined){ return; }
+			if(config && !api.isJsonString(config)){
+				ui.showInfoMessage('Config should be a valid JSON');
+				return; 
+			}
+			if(config)
+			{
+				param = api.ParseJson(config)
+			}
+		}
+
 		let result = await api.TriggerLambda(node.Region, node.Lambda, param);
 		if(!result.isSuccessful)
 		{
@@ -323,7 +349,6 @@ export class LambdaTreeView {
 		if(result.result && result.result.Payload)
 		{
 			ui.logToOutput("api.TriggerLambda PayLoad \n" + payload, undefined, true);
-			this.ViewLatestLog(node)
 		}
 		
 		ui.showInfoMessage('Lambda Triggered Successfully');
@@ -334,8 +359,6 @@ export class LambdaTreeView {
 		ui.logToOutput('LambdaTreeView.ViewLatestLog Started');
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
 
 		let resultLogs = await api.GetLatestLambdaLogs(node.Region, node.Lambda);
 		if(!resultLogs.isSuccessful)
@@ -388,8 +411,6 @@ export class LambdaTreeView {
 	async PrintLambda(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.PrintLambda Started');
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
 
 		let result = await api.GetLambda(node.Region, node.Lambda);
 		if(!result.isSuccessful)
@@ -407,8 +428,7 @@ export class LambdaTreeView {
 		ui.logToOutput('LambdaTreeView.UpdateLambdaCodes Started');
 		if(node.TreeItemType === TreeItemType.CodePath && node.Parent) { node = node.Parent;}
 		if(node.TreeItemType !== TreeItemType.Code) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
+
 		if(!node.CodePath) { 
 			ui.showWarningMessage("Please Set Code Path First");
 			return; 
@@ -429,8 +449,6 @@ export class LambdaTreeView {
 		ui.logToOutput('LambdaTreeView.SetCodePath Started');
 		if(node.TreeItemType === TreeItemType.CodePath && node.Parent) { node = node.Parent;}
 		if(node.TreeItemType !== TreeItemType.Code) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
 
 		const selectedPath = await vscode.window.showOpenDialog({
 			canSelectMany: false,
@@ -451,8 +469,6 @@ export class LambdaTreeView {
 		ui.logToOutput('LambdaTreeView.UnsetCodePath Started');
 		if(node.TreeItemType === TreeItemType.CodePath && node.Parent) { node = node.Parent;}
 		if(node.TreeItemType !== TreeItemType.Code) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
 
 		node.CodePath = undefined
 		this.treeDataProvider.RemoveCodePath(node.Region, node.Lambda);
@@ -463,8 +479,7 @@ export class LambdaTreeView {
 	async ViewLog(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.ViewLog Started');
 		if(node.TreeItemType !== TreeItemType.LogStream) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
+
 		if(!node.LogStreamName) { return; }
 
 		const logGroupName = `/aws/lambda/${node.Lambda}`;
@@ -475,8 +490,6 @@ export class LambdaTreeView {
 		ui.logToOutput('LambdaTreeView.RefreshLogs Started');
 		
 		if(node.TreeItemType !== TreeItemType.LogGroup) { return;}
-		if(!node.Lambda) { return; }
-		if(!node.Region) { return; }
 
 		let resultLogs = await api.GetLatestLambdaLogStreams(node.Region, node.Lambda);
 		if(!resultLogs.isSuccessful)
@@ -490,14 +503,30 @@ export class LambdaTreeView {
 		ui.showInfoMessage('Lambda Logs Retrieved Successfully');
 	}
 
-	async RemoveTriggerConfig(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.RemoveTriggerConfig Started');
-		ui.showWarningMessage("Work In Progress");
+	async RemovePayloadPath(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.RemovePayloadPath Started');
+		if(node.TreeItemType !== TreeItemType.TriggerFilePayload) { return;}
+
+		this.treeDataProvider.RemovePayloadPath(node);
+		this.SaveState();
+		ui.showInfoMessage('Payload Path Removed Successfully');
 	}
 
-	async AddTriggerConfig(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.AddTriggerConfig Started');
-		ui.showWarningMessage("Work In Progress");
+	async AddPayloadPath(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.AddPayloadPath Started');
+		if(node.TreeItemType !== TreeItemType.TriggerGroup) { return;}
+
+		const selectedPath = await vscode.window.showOpenDialog({
+			canSelectMany: false,
+			openLabel: 'Select',
+			canSelectFiles: true
+		});
+		
+		if(!selectedPath || selectedPath.length===0){ return; }
+
+		this.treeDataProvider.AddPayloadPath(node, selectedPath[0].path);
+		this.SaveState();
+		ui.showInfoMessage('Payload Path Added Successfully');
 	}
 
 

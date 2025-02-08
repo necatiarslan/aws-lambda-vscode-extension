@@ -110,11 +110,26 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		triggerItem.Parent = treeItem;
 		treeItem.Children.push(triggerItem);
 
-		let triggerParam = new LambdaTreeItem("w/ Param", TreeItemType.TriggerConfig);
-		triggerParam.Lambda = treeItem.Lambda;
-		triggerParam.Region = treeItem.Region;
-		triggerParam.Parent = triggerItem;
-		triggerItem.Children.push(triggerParam);
+		let triggerWithPayload = new LambdaTreeItem("With Paylod", TreeItemType.TriggerWithPayload);
+		triggerWithPayload.Lambda = treeItem.Lambda;
+		triggerWithPayload.Region = treeItem.Region;
+		triggerWithPayload.Parent = triggerItem;
+		triggerItem.Children.push(triggerWithPayload);
+
+		let triggerWithoutPayload = new LambdaTreeItem("Without Paylod", TreeItemType.TriggerNoPayload);
+		triggerWithoutPayload.Lambda = treeItem.Lambda;
+		triggerWithoutPayload.Region = treeItem.Region;
+		triggerWithoutPayload.Parent = triggerItem;
+		triggerItem.Children.push(triggerWithoutPayload);
+
+		for(var i=0; i<LambdaTreeView.Current.PayloadPathList.length; i++)
+		{
+			if(LambdaTreeView.Current.PayloadPathList[i].Region === Region 
+				&& LambdaTreeView.Current.CodePathList[i].Lambda === Lambda)
+			{
+				this.AddNewPayloadPathNode(triggerItem, LambdaTreeView.Current.PayloadPathList[i].PayloadPath);
+			}
+		}
 
 		let logsItem = new LambdaTreeItem("Logs", TreeItemType.LogGroup);
 		logsItem.Lambda = treeItem.Lambda;
@@ -123,6 +138,62 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		logsItem.Parent = treeItem;
 		treeItem.Children.push(logsItem);
 		return treeItem;
+	}
+
+	AddPayloadPath(node: LambdaTreeItem, PayloadPath:string){
+		
+		for(var i=0; i<LambdaTreeView.Current.PayloadPathList.length; i++)
+		{
+			if(LambdaTreeView.Current.PayloadPathList[i].Region === node.Region 
+				&& LambdaTreeView.Current.CodePathList[i].Lambda === node.Lambda
+				&& LambdaTreeView.Current.PayloadPathList[i].PayloadPath === PayloadPath)
+			{
+				return;
+			}
+		}
+		this.AddNewPayloadPathNode(node, PayloadPath);
+		LambdaTreeView.Current.PayloadPathList.push({Region: node.Region, Lambda: node.Lambda, PayloadPath: PayloadPath});
+		this.Refresh();
+	}
+
+	private AddNewPayloadPathNode(node: LambdaTreeItem, PayloadPath: string) {
+		let fileName = PayloadPath.split("/").pop();
+		if (!fileName) { fileName = PayloadPath; }
+
+		let treeItem = new LambdaTreeItem(fileName, TreeItemType.TriggerFilePayload);
+		treeItem.Region = node.Region;
+		treeItem.Lambda = node.Lambda;
+		treeItem.PayloadPath = PayloadPath;
+		treeItem.Parent = node;
+		node.Children.push(treeItem);
+	}
+
+	RemovePayloadPath(node: LambdaTreeItem){
+		if(!node.Parent) { return; }
+
+		for(var i=0; i<LambdaTreeView.Current.PayloadPathList.length; i++)
+		{
+			if(LambdaTreeView.Current.PayloadPathList[i].Region === node.Region 
+				&& LambdaTreeView.Current.PayloadPathList[i].Lambda === node.Lambda
+				&& LambdaTreeView.Current.PayloadPathList[i].PayloadPath === node.PayloadPath
+			)
+			{
+				LambdaTreeView.Current.PayloadPathList.splice(i, 1);
+			}
+		}
+		
+		let parentNode = node.Parent;
+		for(var i=0; i<parentNode.Children.length; i++)
+		{
+			if(parentNode.Children[i].Region === node.Region 
+				&& parentNode.Children[i].Lambda === node.Lambda
+				&& parentNode.Children[i].PayloadPath === node.PayloadPath
+			)
+			{
+				parentNode.Children.splice(i, 1);
+			}
+		}
+		this.Refresh();
 	}
 
 	AddCodePath(Region:string, Lambda:string, CodePath:string){
