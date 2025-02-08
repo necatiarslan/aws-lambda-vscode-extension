@@ -476,14 +476,14 @@ export async function UpdateLambdaCode(
 
 
 
-export async function ZipTextFile(inputFilePath: string, outputZipPath?: string): Promise<MethodResult<string>> {
+export async function ZipTextFile(inputPath: string, outputZipPath?: string): Promise<MethodResult<string>> {
   let result:MethodResult<string> = new MethodResult<string>();
 
   try 
   {
     if(!outputZipPath)
     {
-      outputZipPath = dirname(inputFilePath) + "/" + basename(inputFilePath) + ".zip"
+      outputZipPath = dirname(inputPath) + "/" + basename(inputPath) + ".zip"
     }
 
     // Delete the output zip file if it already exists
@@ -497,7 +497,13 @@ export async function ZipTextFile(inputFilePath: string, outputZipPath?: string)
     });
 
     archive.pipe(output);
-    archive.file(inputFilePath, { name: basename(inputFilePath) });
+
+    if (fs.lstatSync(inputPath).isDirectory()) {
+      archive.directory(inputPath, false);
+    } else {
+      archive.file(inputPath, { name: basename(inputPath) });
+    }
+
     archive.finalize();
 
     result.result = outputZipPath;

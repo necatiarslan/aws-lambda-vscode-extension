@@ -13,6 +13,25 @@ class LambdaTreeItem extends vscode.TreeItem {
         this.TreeItemType = treeItemType;
         this.refreshUI();
     }
+    set CodePath(path) {
+        this.codePath = path;
+        if (path) {
+            let node = new LambdaTreeItem(path, TreeItemType.CodePath);
+            node.Lambda = this.Lambda;
+            node.Region = this.Region;
+            node.Parent = this;
+            this.Children.push(node);
+            this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+        }
+        else {
+            this.Children = [];
+            this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+        }
+        //this.refreshUI();
+    }
+    get CodePath() {
+        return this.codePath;
+    }
     refreshUI() {
         if (this.TreeItemType === TreeItemType.Lambda) {
             this.iconPath = new vscode.ThemeIcon('server-process');
@@ -37,6 +56,10 @@ class LambdaTreeItem extends vscode.TreeItem {
         else if (this.TreeItemType === TreeItemType.LogStream) {
             this.iconPath = new vscode.ThemeIcon('output');
             this.contextValue = "LogStream";
+        }
+        else if (this.TreeItemType === TreeItemType.CodePath) {
+            this.iconPath = new vscode.ThemeIcon('file');
+            this.contextValue = "CodePath";
         }
         else {
             this.iconPath = new vscode.ThemeIcon('circle-outline');
@@ -87,5 +110,6 @@ var TreeItemType;
     TreeItemType[TreeItemType["LogStream"] = 4] = "LogStream";
     TreeItemType[TreeItemType["TriggerGroup"] = 5] = "TriggerGroup";
     TreeItemType[TreeItemType["TriggerConfig"] = 6] = "TriggerConfig";
+    TreeItemType[TreeItemType["CodePath"] = 7] = "CodePath";
 })(TreeItemType = exports.TreeItemType || (exports.TreeItemType = {}));
 //# sourceMappingURL=LambdaTreeItem.js.map

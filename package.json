@@ -118,9 +118,14 @@
         "icon": "$(folder-library)"
       },
       {
-        "command": "LambdaTreeView.UpdateCodes",
-        "title": "Update Codes",
+        "command": "LambdaTreeView.UpdateLambdaCodes",
+        "title": "Update Lambda Codes",
         "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "LambdaTreeView.UnsetCodePath",
+        "title": "Unset Code Path",
+        "icon": "$(trash)"
       },
       {
         "command": "LambdaTreeView.PrintLambda",
@@ -218,12 +223,17 @@
         },
         {
           "command": "LambdaTreeView.SetCodePath",
-          "when": "view == LambdaTreeView && viewItem == Code",
+          "when": "view == LambdaTreeView && (viewItem == Code || viewItem == CodePath)",
           "group": "inline"
         },
         {
-          "command": "LambdaTreeView.UpdateCodes",
-          "when": "view == LambdaTreeView && viewItem == Code",
+          "command": "LambdaTreeView.UnsetCodePath",
+          "when": "view == LambdaTreeView && (viewItem == Code || viewItem == CodePath)",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.UpdateLambdaCodes",
+          "when": "view == LambdaTreeView && (viewItem == Code || viewItem == CodePath)",
           "group": "inline"
         },
         {
@@ -269,7 +279,7 @@
     "viewsWelcome": [
       {
         "view": "LambdaTreeView",
-        "contents": "\n\n\n\n Please wait... \n\n If you can not connect after a while check your Aws Credentials, Network and Proxy settings. \n\n\n\n To Access Aws, you need to configure aws credentials. \n For more detail on Aws Credentials [Click Here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) \n For a Youtube Tutorial [Click Here](https://www.youtube.com/watch?v=SON8sY1iOBU)"
+        "contents": "Please click [+] to add your lambda Functions. \n [Add Lambda](command:LambdaTreeView.AddLambda) \n Leave lambda name empty to get all your buckets. You can enter lambda name partially. \n If you can not connect after a while check your Aws Credentials, Network and Proxy settings. \n\n\n\n To Access Aws, you need to configure aws credentials. \n For more detail on Aws Credentials [Click Here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) \n For a Youtube Tutorial [Click Here](https://www.youtube.com/watch?v=SON8sY1iOBU) \n [Test Aws Credentials](command:LambdaTreeView.AwsCredentialsSetup) \n [Update Aws EndPoint](command:LambdaTreeView.UpdateAwsEndPoint)"
       }
     ]
   },

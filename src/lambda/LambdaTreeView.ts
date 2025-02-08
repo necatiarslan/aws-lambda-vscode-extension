@@ -403,8 +403,9 @@ export class LambdaTreeView {
 		ui.logToOutput(JSON.stringify(result.result, null, 4));
 	}
 
-	async UpdateCodes(node: LambdaTreeItem) {
-		ui.logToOutput('LambdaTreeView.UpdateCodes Started');
+	async UpdateLambdaCodes(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.UpdateLambdaCodes Started');
+		if(node.TreeItemType === TreeItemType.CodePath && node.Parent) { node = node.Parent;}
 		if(node.TreeItemType !== TreeItemType.Code) { return;}
 		if(!node.Lambda) { return; }
 		if(!node.Region) { return; }
@@ -426,6 +427,7 @@ export class LambdaTreeView {
 
 	async SetCodePath(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.SetCodePath Started');
+		if(node.TreeItemType === TreeItemType.CodePath && node.Parent) { node = node.Parent;}
 		if(node.TreeItemType !== TreeItemType.Code) { return;}
 		if(!node.Lambda) { return; }
 		if(!node.Region) { return; }
@@ -441,6 +443,19 @@ export class LambdaTreeView {
 
 		node.CodePath = selectedPath[0].path;
 		this.treeDataProvider.AddCodePath(node.Region, node.Lambda, node.CodePath);
+		this.SaveState();
+		ui.showInfoMessage('Code Path Set Successfully');
+	}
+
+	async UnsetCodePath(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.UnsetCodePath Started');
+		if(node.TreeItemType === TreeItemType.CodePath && node.Parent) { node = node.Parent;}
+		if(node.TreeItemType !== TreeItemType.Code) { return;}
+		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
+
+		node.CodePath = undefined
+		this.treeDataProvider.RemoveCodePath(node.Region, node.Lambda);
 		this.SaveState();
 		ui.showInfoMessage('Code Path Set Successfully');
 	}

@@ -12,13 +12,33 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public Children:LambdaTreeItem[] = []
 	public IsHidden: boolean = false
 	public TriggerConfigPath: string | undefined
-	public CodePath: string | undefined;
+	private codePath: string | undefined;
 
 	constructor(text:string, treeItemType:TreeItemType) {
 		super(text)
 		this.Text = text
 		this.TreeItemType = treeItemType
 		this.refreshUI()
+	}
+
+	public set CodePath(path: string | undefined) {
+		this.codePath = path;
+		if (path) {
+			let node = new LambdaTreeItem(path, TreeItemType.CodePath)
+			node.Lambda = this.Lambda;
+			node.Region = this.Region;
+			node.Parent = this;
+			this.Children.push(node);
+			this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+		} else {
+			this.Children = [];
+			this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+		}
+		//this.refreshUI();
+	}
+
+	public get CodePath(): string | undefined {
+		return this.codePath;
 	}
 
 	public refreshUI() {
@@ -52,6 +72,11 @@ export class LambdaTreeItem extends vscode.TreeItem {
 		{
 			this.iconPath = new vscode.ThemeIcon('output');
 			this.contextValue = "LogStream"
+		}
+		else if(this.TreeItemType === TreeItemType.CodePath)
+		{
+			this.iconPath = new vscode.ThemeIcon('file');
+			this.contextValue = "CodePath"
 		}
 		else
 		{
@@ -117,5 +142,6 @@ export enum TreeItemType{
 	LogGroup = 3,
 	LogStream = 4,
 	TriggerGroup = 5,
-	TriggerConfig = 6
+	TriggerConfig = 6,
+	CodePath = 7,
 }

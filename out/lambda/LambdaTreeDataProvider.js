@@ -104,7 +104,12 @@ class LambdaTreeDataProvider {
         return treeItem;
     }
     AddCodePath(Region, Lambda, CodePath) {
-        this.RemoveCodePath(Region, Lambda);
+        //remove old
+        for (var i = 0; i < LambdaTreeView_1.LambdaTreeView.Current.CodePathList.length; i++) {
+            if (LambdaTreeView_1.LambdaTreeView.Current.CodePathList[i].Region === Region && LambdaTreeView_1.LambdaTreeView.Current.CodePathList[i].Lambda === Lambda) {
+                LambdaTreeView_1.LambdaTreeView.Current.CodePathList.splice(i, 1);
+            }
+        }
         LambdaTreeView_1.LambdaTreeView.Current.CodePathList.push({ Region: Region, Lambda: Lambda, CodePath: CodePath });
         this.Refresh();
     }
@@ -114,6 +119,7 @@ class LambdaTreeDataProvider {
                 LambdaTreeView_1.LambdaTreeView.Current.CodePathList.splice(i, 1);
             }
         }
+        this.Refresh();
     }
     GetCodePath(Region, Lambda) {
         for (var item of LambdaTreeView_1.LambdaTreeView.Current.CodePathList) {

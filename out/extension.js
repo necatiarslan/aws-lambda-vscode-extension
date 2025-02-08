@@ -58,11 +58,14 @@ function activate(context) {
     vscode.commands.registerCommand('LambdaTreeView.PrintLambda', async (node) => {
         await treeView.PrintLambda(node);
     });
-    vscode.commands.registerCommand('LambdaTreeView.UpdateCodes', async (node) => {
-        await treeView.UpdateCodes(node);
+    vscode.commands.registerCommand('LambdaTreeView.UpdateLambdaCodes', async (node) => {
+        await treeView.UpdateLambdaCodes(node);
     });
     vscode.commands.registerCommand('LambdaTreeView.SetCodePath', async (node) => {
         await treeView.SetCodePath(node);
+    });
+    vscode.commands.registerCommand('LambdaTreeView.UnsetCodePath', async (node) => {
+        await treeView.UnsetCodePath(node);
     });
     vscode.commands.registerCommand('LambdaTreeView.ViewLog', async (node) => {
         await treeView.ViewLog(node);

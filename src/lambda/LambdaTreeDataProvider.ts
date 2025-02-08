@@ -126,7 +126,14 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 	}
 
 	AddCodePath(Region:string, Lambda:string, CodePath:string){
-		this.RemoveCodePath(Region, Lambda);
+		//remove old
+		for(var i=0; i<LambdaTreeView.Current.CodePathList.length; i++)
+		{
+			if(LambdaTreeView.Current.CodePathList[i].Region === Region && LambdaTreeView.Current.CodePathList[i].Lambda === Lambda)
+			{
+				LambdaTreeView.Current.CodePathList.splice(i, 1);
+			}
+		}
 		
 		LambdaTreeView.Current.CodePathList.push({Region: Region, Lambda: Lambda, CodePath: CodePath});
 		this.Refresh();
@@ -140,6 +147,7 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 				LambdaTreeView.Current.CodePathList.splice(i, 1);
 			}
 		}
+		this.Refresh();
 	}
 
 	GetCodePath(Region:string, Lambda:string){

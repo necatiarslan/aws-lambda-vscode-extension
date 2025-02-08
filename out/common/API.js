@@ -376,11 +376,11 @@ async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
     }
 }
 exports.UpdateLambdaCode = UpdateLambdaCode;
-async function ZipTextFile(inputFilePath, outputZipPath) {
+async function ZipTextFile(inputPath, outputZipPath) {
     let result = new MethodResult_1.MethodResult();
     try {
         if (!outputZipPath) {
-            outputZipPath = (0, path_2.dirname)(inputFilePath) + "/" + (0, path_2.basename)(inputFilePath) + ".zip";
+            outputZipPath = (0, path_2.dirname)(inputPath) + "/" + (0, path_2.basename)(inputPath) + ".zip";
         }
         // Delete the output zip file if it already exists
         if (fs.existsSync(outputZipPath)) {
@@ -391,7 +391,12 @@ async function ZipTextFile(inputFilePath, outputZipPath) {
             zlib: { level: 9 } // Set compression level
         });
         archive.pipe(output);
-        archive.file(inputFilePath, { name: (0, path_2.basename)(inputFilePath) });
+        if (fs.lstatSync(inputPath).isDirectory()) {
+            archive.directory(inputPath, false);
+        }
+        else {
+            archive.file(inputPath, { name: (0, path_2.basename)(inputPath) });
+        }
         archive.finalize();
         result.result = outputZipPath;
         result.isSuccessful = true;
