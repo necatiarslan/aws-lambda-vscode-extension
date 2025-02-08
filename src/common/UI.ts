@@ -12,10 +12,10 @@ export function getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathLi
   return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 }
 
-export function showOutputMessage(message: any, popupMessage: string = "Results are printed to OUTPUT / AwsLambda-Extension", clearPrevMessages:boolean=true): void {
+export function showOutputMessage(message: any, popupMessage: string = "Results are printed to OUTPUT / AwsLambda-Log", clearPrevMessages:boolean=true): void {
 
   if (!outputChannel) {
-    outputChannel = vscode.window.createOutputChannel("AwsLambda-Extension");
+    outputChannel = vscode.window.createOutputChannel("AwsLambda-Log");
   }
 
   if(clearPrevMessages)

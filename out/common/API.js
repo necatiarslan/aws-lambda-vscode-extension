@@ -353,6 +353,10 @@ async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
     try {
         const lambda = await GetLambdaClient(Region);
         let zipresponse = await ZipTextFile(CodeFilePath);
+        //wait for the zip file to be created
+        while (!fs.existsSync(zipresponse.result)) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
         const zipFileContents = fs.readFileSync(zipresponse.result);
         const command = new client_lambda_4.UpdateFunctionCodeCommand({
             FunctionName: LambdaName,
@@ -376,14 +380,18 @@ async function ZipTextFile(inputFilePath, outputZipPath) {
     let result = new MethodResult_1.MethodResult();
     try {
         if (!outputZipPath) {
-            outputZipPath = (0, path_2.dirname)(inputFilePath) + (0, path_2.basename)(inputFilePath) + ".zip";
+            outputZipPath = (0, path_2.dirname)(inputFilePath) + "/" + (0, path_2.basename)(inputFilePath) + ".zip";
+        }
+        // Delete the output zip file if it already exists
+        if (fs.existsSync(outputZipPath)) {
+            fs.unlinkSync(outputZipPath);
         }
         const output = fs.createWriteStream(outputZipPath);
         const archive = archiver('zip', {
             zlib: { level: 9 } // Set compression level
         });
         archive.pipe(output);
-        archive.file(inputFilePath, { name: (0, path_2.basename)(inputFilePath) + (0, path_2.extname)(inputFilePath) });
+        archive.file(inputFilePath, { name: (0, path_2.basename)(inputFilePath) });
         archive.finalize();
         result.result = outputZipPath;
         result.isSuccessful = true;

@@ -450,6 +450,10 @@ export async function UpdateLambdaCode(
     const lambda = await GetLambdaClient(Region);
 
     let zipresponse = await ZipTextFile(CodeFilePath);
+    //wait for the zip file to be created
+    while (!fs.existsSync(zipresponse.result)) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     const zipFileContents = fs.readFileSync(zipresponse.result);
 
     const command = new UpdateFunctionCodeCommand({
@@ -479,7 +483,12 @@ export async function ZipTextFile(inputFilePath: string, outputZipPath?: string)
   {
     if(!outputZipPath)
     {
-      outputZipPath = dirname(inputFilePath) + basename(inputFilePath) + ".zip"
+      outputZipPath = dirname(inputFilePath) + "/" + basename(inputFilePath) + ".zip"
+    }
+
+    // Delete the output zip file if it already exists
+    if (fs.existsSync(outputZipPath)) {
+      fs.unlinkSync(outputZipPath);
     }
 
     const output = fs.createWriteStream(outputZipPath);
@@ -488,7 +497,7 @@ export async function ZipTextFile(inputFilePath: string, outputZipPath?: string)
     });
 
     archive.pipe(output);
-    archive.file(inputFilePath, { name: basename(inputFilePath)+extname(inputFilePath) });
+    archive.file(inputFilePath, { name: basename(inputFilePath) });
     archive.finalize();
 
     result.result = outputZipPath;

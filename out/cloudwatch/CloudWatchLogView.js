@@ -155,7 +155,7 @@ class CloudWatchLogView {
             <tr>
                 <td style="text-align:left">
                     <vscode-button id="refresh" >Refresh</vscode-button>
-                    <vscode-button id="export_logs" >Export Logs</vscode-button>
+                    <vscode-button id="export_logs" >Export</vscode-button>
                 </td>
                 <td style="text-align:right">
                     <vscode-textfield id="hide_text" placeholder="Hide" value="${this.HideText}">

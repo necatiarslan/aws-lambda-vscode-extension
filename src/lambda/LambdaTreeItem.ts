@@ -12,6 +12,7 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public Children:LambdaTreeItem[] = []
 	public IsHidden: boolean = false
 	public TriggerConfigPath: string | undefined
+	public CodePath: string | undefined;
 
 	constructor(text:string, treeItemType:TreeItemType) {
 		super(text)

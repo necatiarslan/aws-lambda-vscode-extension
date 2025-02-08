@@ -8,7 +8,7 @@ import { CloudWatchLogView } from '../cloudwatch/CloudWatchLogView';
 
 export class LambdaTreeView {
 
-	public static Current: LambdaTreeView | undefined;
+	public static Current: LambdaTreeView;
 	public view: vscode.TreeView<LambdaTreeItem>;
 	public treeDataProvider: LambdaTreeDataProvider;
 	public context: vscode.ExtensionContext;
@@ -17,16 +17,19 @@ export class LambdaTreeView {
 	public isShowHiddenNodes: boolean = false;
 	public AwsProfile: string = "default";	
 	public AwsEndPoint: string | undefined;
+	public LambdaList: {Region: string, Lambda: string}[] = [];
+	public CodePathList: {Region: string, Lambda: string, CodePath: string}[] = [];
+
 
 	constructor(context: vscode.ExtensionContext) {
 		ui.logToOutput('TreeView.constructor Started');
+		LambdaTreeView.Current = this;
 		this.context = context;
-		this.treeDataProvider = new LambdaTreeDataProvider();
 		this.LoadState();
+		this.treeDataProvider = new LambdaTreeDataProvider();
 		this.view = vscode.window.createTreeView('LambdaTreeView', { treeDataProvider: this.treeDataProvider, showCollapseAll: true });
 		this.Refresh();
 		context.subscriptions.push(this.view);
-		LambdaTreeView.Current = this;
 		this.SetFilterMessage();
 		this.TestAwsConnection();
 	}
@@ -131,8 +134,8 @@ export class LambdaTreeView {
 			this.context.globalState.update('FilterString', this.FilterString);
 			this.context.globalState.update('ShowOnlyFavorite', this.isShowOnlyFavorite);
 			this.context.globalState.update('ShowHiddenNodes', this.isShowHiddenNodes);
-			this.context.globalState.update('LambdaList', this.treeDataProvider.GetLambdaList());
-			this.context.globalState.update('ViewType', this.treeDataProvider.ViewType);
+			this.context.globalState.update('LambdaList', this.LambdaList);
+			this.context.globalState.update('CodePathList', this.CodePathList);
 			this.context.globalState.update('AwsEndPoint', this.AwsEndPoint);
 
 			ui.logToOutput("LambdaTreeView.saveState Successfull");
@@ -144,53 +147,79 @@ export class LambdaTreeView {
 	LoadState() {
 		ui.logToOutput('LambdaTreeView.loadState Started');
 		try {
+			let AwsEndPointTemp: string | undefined = this.context.globalState.get('AwsEndPoint');
+			if (AwsEndPointTemp) { this.AwsEndPoint = AwsEndPointTemp; }
+		} 
+		catch (error:any) 
+		{
+			ui.logToOutput("LambdaTreeView.loadState AwsEndPoint Error !!!", error);
+			ui.showErrorMessage("Aws Lambda Load State AwsEndPoint Error !!!", error);
+		}
 
+		try {
 			let AwsProfileTemp: string | undefined = this.context.globalState.get('AwsProfile');
-			if (AwsProfileTemp) {
-				this.AwsProfile = AwsProfileTemp;
-			}
+			if (AwsProfileTemp) { this.AwsProfile = AwsProfileTemp; }
+		} 
+		catch (error:any) 
+		{
+			ui.logToOutput("LambdaTreeView.loadState AwsProfile Error !!!", error);
+			ui.showErrorMessage("Aws Lambda Load State AwsProfile Error !!!", error);
+		}
 
+		try {
 			let filterStringTemp: string | undefined = this.context.globalState.get('FilterString');
-			if (filterStringTemp) {
-				this.FilterString = filterStringTemp;
-			}
+			if (filterStringTemp) { this.FilterString = filterStringTemp; }
+		} 
+		catch (error:any) 
+		{
+			ui.logToOutput("LambdaTreeView.loadState FilterString Error !!!", error);
+			ui.showErrorMessage("Aws Lambda Load State FilterString Error !!!", error);
+		}
 
+		try {
 			let ShowOnlyFavoriteTemp: boolean | undefined = this.context.globalState.get('ShowOnlyFavorite');
 			if (ShowOnlyFavoriteTemp) { this.isShowOnlyFavorite = ShowOnlyFavoriteTemp; }
+		} 
+		catch (error:any) 
+		{
+			ui.logToOutput("LambdaTreeView.loadState Error !!!", error);
+			ui.showErrorMessage("Aws Lambda Load State Error !!!", error);
+		}
 
+		try {
 			let ShowHiddenNodesTemp: boolean | undefined = this.context.globalState.get('ShowHiddenNodes');
 			if (ShowHiddenNodesTemp) { this.isShowHiddenNodes = ShowHiddenNodesTemp; }
-
-			let LambdaListTemp:[{Region: string, Lambda: string}] | undefined  = this.context.globalState.get('LambdaList');
-			if(LambdaListTemp)
-			{
-				this.treeDataProvider.SetLambdaList(LambdaListTemp);
-			}
-
-			let ViewTypeTemp:number | undefined = this.context.globalState.get('ViewType');
-			if(ViewTypeTemp)
-			{
-				this.treeDataProvider.ViewType = ViewTypeTemp;
-			}
-
-			let AwsEndPointTemp: string | undefined = this.context.globalState.get('AwsEndPoint');
-			this.AwsEndPoint = AwsEndPointTemp;
-
-			ui.logToOutput("LambdaTreeView.loadState Successfull");
-
 		} 
-		catch (error) 
+		catch (error:any) 
 		{
-			ui.logToOutput("LambdaTreeView.loadState Error !!!");
+			ui.logToOutput("LambdaTreeView.loadState isShowHiddenNodes Error !!!", error);
+			ui.showErrorMessage("Aws Lambda Load State isShowHiddenNodes Error !!!", error);
 		}
+
+		try {
+			let LambdaListTemp:{Region: string, Lambda: string}[] | undefined  = this.context.globalState.get('LambdaList');
+			if(LambdaListTemp){ this.LambdaList = LambdaListTemp; }
+
+			let CodePathListTemp:{Region: string, Lambda: string, CodePath: string}[] | undefined  = this.context.globalState.get('CodePathList');
+			if(CodePathListTemp){ this.CodePathList = CodePathListTemp; }
+		} 
+		catch (error:any) 
+		{
+			ui.logToOutput("LambdaTreeView.loadState LambdaList/CodePathList Error !!!", error);
+			ui.showErrorMessage("Aws Lambda Load State LambdaList/CodePathList Error !!!", error);
+		}
+
 	}
 
 	async SetFilterMessage(){
-		this.view.message = 
-		await this.GetFilterProfilePrompt()
-		+ this.GetBoolenSign(this.isShowOnlyFavorite) + "Fav, " 
-		+ this.GetBoolenSign(this.isShowHiddenNodes) + "Hidden, "
-		+ this.FilterString;
+		if(this.LambdaList.length > 0)
+		{
+			this.view.message = 
+			await this.GetFilterProfilePrompt()
+			+ this.GetBoolenSign(this.isShowOnlyFavorite) + "Fav, " 
+			+ this.GetBoolenSign(this.isShowHiddenNodes) + "Hidden, "
+			+ this.FilterString;
+		}
 	}
 
 	async GetFilterProfilePrompt() {
@@ -353,6 +382,7 @@ export class LambdaTreeView {
 			this.AwsEndPoint = awsEndPointUrl;
 		}
 		this.SaveState();
+		this.Refresh();
 	}
 
 	async PrintLambda(node: LambdaTreeItem) {
@@ -368,20 +398,51 @@ export class LambdaTreeView {
 			ui.showErrorMessage('Get Lambda Error !!!', result.error);
 			return;
 		}
-		ui.logToOutput("api.GetLambda Success !!!");
-		ui.logToOutput("api.GetLambda \n" + JSON.stringify(result.result, null, 4));
-		ui.showInfoMessage('Lambda Details Retrieved Successfully. Check Output window for details');
-
+		let codePath = this.treeDataProvider.GetCodePath(node.Region, node.Lambda);
+		ui.logToOutput("Code Path : " + codePath);
+		ui.logToOutput(JSON.stringify(result.result, null, 4));
 	}
 
 	async UpdateCodes(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.UpdateCodes Started');
-		ui.showWarningMessage("Work In Progress");
+		if(node.TreeItemType !== TreeItemType.Code) { return;}
+		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
+		if(!node.CodePath) { 
+			ui.showWarningMessage("Please Set Code Path First");
+			return; 
+		}
+
+		let result = await api.UpdateLambdaCode(node.Region, node.Lambda, node.CodePath);
+		if(!result.isSuccessful)
+		{
+			ui.logToOutput("api.UpdateLambdaCode Error !!!", result.error);
+			ui.showErrorMessage('Update Lambda Code Error !!!', result.error);
+			return;
+		}
+		ui.logToOutput("api.UpdateLambdaCode Success !!!");
+		ui.showInfoMessage('Lambda Code Updated Successfully');
 	}
 
 	async SetCodePath(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.SetCodePath Started');
-		ui.showWarningMessage("Work In Progress");
+		if(node.TreeItemType !== TreeItemType.Code) { return;}
+		if(!node.Lambda) { return; }
+		if(!node.Region) { return; }
+
+		const selectedPath = await vscode.window.showOpenDialog({
+			canSelectMany: false,
+			openLabel: 'Select',
+			canSelectFiles: true,
+			canSelectFolders: true
+		});
+		
+		if(!selectedPath || selectedPath.length===0){ return; }
+
+		node.CodePath = selectedPath[0].path;
+		this.treeDataProvider.AddCodePath(node.Region, node.Lambda, node.CodePath);
+		this.SaveState();
+		ui.showInfoMessage('Code Path Set Successfully');
 	}
 
 	async ViewLog(node: LambdaTreeItem) {

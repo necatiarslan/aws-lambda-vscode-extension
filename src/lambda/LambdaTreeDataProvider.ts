@@ -9,28 +9,18 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 	readonly onDidChangeTreeData: vscode.Event<LambdaTreeItem | undefined | void> = this._onDidChangeTreeData.event;
 	
 	LambdaNodeList: LambdaTreeItem[] = [];
-	public LambdaList: [{Region: string, Lambda: string}] = [{Region: "", Lambda: ""}];
-	public ViewType:ViewType = ViewType.Lambda;
 
 	constructor() {
 		
 	}
 
 	Refresh(): void {
+		if(this.LambdaNodeList.length === 0){ this.LoadLambdaNodeList(); }
 		this._onDidChangeTreeData.fire();
 	}
 
-	public GetLambdaList(){
-		return this.LambdaList;
-	}
-
-	public SetLambdaList(LambdaList: [{Region: string, Lambda: string}]){
-		this.LambdaList = LambdaList;
-		this.LoadLambdaNodeList();
-	}
-
 	AddLambda(Region:string, Lambda:string){
-		for(var item of this.LambdaList)
+		for(var item of LambdaTreeView.Current.LambdaList)
 		{
 			if(item.Region === Region && item.Lambda === Lambda)
 			{
@@ -38,23 +28,22 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 			}
 		}
 		
-		this.LambdaList.push({Region: Region, Lambda: Lambda});
-
-		this.LoadLambdaNodeList();
+		LambdaTreeView.Current.LambdaList.push({Region: Region, Lambda: Lambda});
+		this.AddNewLambdaNode(Region, Lambda);
 		this.Refresh();
 	}
 
 	RemoveLambda(Region:string, Lambda:string){
-		for(var i=0; i<this.LambdaList.length; i++)
+		for(var i=0; i<LambdaTreeView.Current.LambdaList.length; i++)
 		{
-			if(this.LambdaList[i].Region === Region && this.LambdaList[i].Lambda === Lambda)
+			if(LambdaTreeView.Current.LambdaList[i].Region === Region && LambdaTreeView.Current.LambdaList[i].Lambda === Lambda)
 			{
-				this.LambdaList.splice(i, 1);
+				LambdaTreeView.Current.LambdaList.splice(i, 1);
 				break;
 			}
 		}
 
-		this.LoadLambdaNodeList();
+		this.RemoveLambdaNode(Region, Lambda);
 		this.Refresh();
 	}
 	AddLogStreams(node: LambdaTreeItem, LogStreams:string[]){
@@ -74,41 +63,94 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 	LoadLambdaNodeList(){
 		this.LambdaNodeList = [];
 		
-		for(var item of this.LambdaList)
+		for(var item of LambdaTreeView.Current.LambdaList)
 		{
-			let treeItem = new LambdaTreeItem(item.Lambda, TreeItemType.Lambda);
-			treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-			treeItem.Region = item.Region;
-			treeItem.Lambda = item.Lambda;
-			
-			let codeItem = new LambdaTreeItem("Code", TreeItemType.Code);
-			codeItem.Lambda = treeItem.Lambda;
-			codeItem.Region = treeItem.Region;
-			codeItem.Parent = treeItem
-			treeItem.Children.push(codeItem);
-
-			let triggerItem = new LambdaTreeItem("Trigger", TreeItemType.TriggerGroup);
-			triggerItem.Lambda = treeItem.Lambda;
-			triggerItem.Region = treeItem.Region;
-			triggerItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-			triggerItem.Parent = treeItem
-			treeItem.Children.push(triggerItem);
-			
-			let triggerParam = new LambdaTreeItem("w/ Param", TreeItemType.TriggerConfig);
-			triggerParam.Lambda = treeItem.Lambda;
-			triggerParam.Region = treeItem.Region;
-			triggerParam.Parent = triggerItem
-			triggerItem.Children.push(triggerParam);
-
-			let logsItem = new LambdaTreeItem("Logs", TreeItemType.LogGroup);
-			logsItem.Lambda = treeItem.Lambda;
-			logsItem.Region = treeItem.Region;
-			logsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-			logsItem.Parent = treeItem
-			treeItem.Children.push(logsItem);
+			let treeItem = this.NewLambdaNode(item.Region, item.Lambda);
 
 			this.LambdaNodeList.push(treeItem);
 		}
+	}
+
+	AddNewLambdaNode(Region:string, Lambda:string){
+		if (this.LambdaNodeList.some(item => item.Region === Region && item.Lambda === Lambda)) { return; }
+
+		let treeItem = this.NewLambdaNode(Region, Lambda);
+		this.LambdaNodeList.push(treeItem);
+	}
+
+	RemoveLambdaNode(Region:string, Lambda:string){
+		for(var i=0; i<this.LambdaNodeList.length; i++)
+		{
+			if(this.LambdaNodeList[i].Region === Region && this.LambdaNodeList[i].Lambda === Lambda)
+			{
+				this.LambdaNodeList.splice(i, 1);
+				break;
+			}
+		}
+	}
+
+	private NewLambdaNode(Region: string, Lambda: string) : LambdaTreeItem
+	{
+		let treeItem = new LambdaTreeItem(Lambda, TreeItemType.Lambda);
+		treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+		treeItem.Region = Region;
+		treeItem.Lambda = Lambda;
+
+		let codeItem = new LambdaTreeItem("Code", TreeItemType.Code);
+		codeItem.Lambda = treeItem.Lambda;
+		codeItem.Region = treeItem.Region;
+		codeItem.Parent = treeItem;
+		codeItem.CodePath = this.GetCodePath(treeItem.Region, treeItem.Lambda);
+		treeItem.Children.push(codeItem);
+
+		let triggerItem = new LambdaTreeItem("Trigger", TreeItemType.TriggerGroup);
+		triggerItem.Lambda = treeItem.Lambda;
+		triggerItem.Region = treeItem.Region;
+		triggerItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+		triggerItem.Parent = treeItem;
+		treeItem.Children.push(triggerItem);
+
+		let triggerParam = new LambdaTreeItem("w/ Param", TreeItemType.TriggerConfig);
+		triggerParam.Lambda = treeItem.Lambda;
+		triggerParam.Region = treeItem.Region;
+		triggerParam.Parent = triggerItem;
+		triggerItem.Children.push(triggerParam);
+
+		let logsItem = new LambdaTreeItem("Logs", TreeItemType.LogGroup);
+		logsItem.Lambda = treeItem.Lambda;
+		logsItem.Region = treeItem.Region;
+		logsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+		logsItem.Parent = treeItem;
+		treeItem.Children.push(logsItem);
+		return treeItem;
+	}
+
+	AddCodePath(Region:string, Lambda:string, CodePath:string){
+		this.RemoveCodePath(Region, Lambda);
+		
+		LambdaTreeView.Current.CodePathList.push({Region: Region, Lambda: Lambda, CodePath: CodePath});
+		this.Refresh();
+	}
+
+	RemoveCodePath(Region:string, Lambda:string){
+		for(var i=0; i<LambdaTreeView.Current.CodePathList.length; i++)
+		{
+			if(LambdaTreeView.Current.CodePathList[i].Region === Region && LambdaTreeView.Current.CodePathList[i].Lambda === Lambda)
+			{
+				LambdaTreeView.Current.CodePathList.splice(i, 1);
+			}
+		}
+	}
+
+	GetCodePath(Region:string, Lambda:string){
+		for(var item of LambdaTreeView.Current.CodePathList)
+		{
+			if(item.Region === Region && item.Lambda === Lambda)
+			{
+				return item.CodePath;
+			}
+		}
+		return "";
 	}
 
 	getChildren(node: LambdaTreeItem): Thenable<LambdaTreeItem[]> {
