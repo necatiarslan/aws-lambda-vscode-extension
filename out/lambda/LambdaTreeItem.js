@@ -63,6 +63,10 @@ class LambdaTreeItem extends vscode.TreeItem {
             this.iconPath = new vscode.ThemeIcon('bracket-error');
             this.contextValue = "TriggerNoPayload";
         }
+        else if (this.TreeItemType === TreeItemType.ResponsePayload) {
+            this.iconPath = new vscode.ThemeIcon('output');
+            this.contextValue = "ResponsePayload";
+        }
         else if (this.TreeItemType === TreeItemType.LogGroup) {
             this.iconPath = new vscode.ThemeIcon('output');
             this.contextValue = "LogGroup";
@@ -128,5 +132,6 @@ var TreeItemType;
     TreeItemType[TreeItemType["TriggerNoPayload"] = 8] = "TriggerNoPayload";
     TreeItemType[TreeItemType["TriggerWithPayload"] = 9] = "TriggerWithPayload";
     TreeItemType[TreeItemType["TriggerFilePayload"] = 10] = "TriggerFilePayload";
+    TreeItemType[TreeItemType["ResponsePayload"] = 11] = "ResponsePayload";
 })(TreeItemType = exports.TreeItemType || (exports.TreeItemType = {}));
 //# sourceMappingURL=LambdaTreeItem.js.map

@@ -46,6 +46,23 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		this.RemoveLambdaNode(Region, Lambda);
 		this.Refresh();
 	}
+	
+	AddResponsePayload(node: LambdaTreeItem, payloadString: string) {
+		let now = new Date();
+		let currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+						now.getMinutes().toString().padStart(2, '0') + ':' + 
+						now.getSeconds().toString().padStart(2, '0');
+
+		let treeItem = new LambdaTreeItem("Response - " + currentTime, TreeItemType.ResponsePayload);
+		treeItem.Region = node.Region;
+		treeItem.Lambda = node.Lambda;
+		treeItem.ResponsePayload = payloadString
+		treeItem.Parent = node
+		node.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed
+		node.Children.push(treeItem)
+		this.Refresh();
+	}
+
 	AddLogStreams(node: LambdaTreeItem, LogStreams:string[]){
 		for(var streamName of LogStreams)
 		{

@@ -113,6 +113,11 @@
         "icon": "$(output)"
       },
       {
+        "command": "LambdaTreeView.ViewResponsePayload",
+        "title": "View Payload",
+        "icon": "$(output)"
+      },
+      {
         "command": "LambdaTreeView.SetCodePath",
         "title": "Set Code Path",
         "icon": "$(folder-library)"
@@ -254,6 +259,11 @@
         {
           "command": "LambdaTreeView.ViewLog",
           "when": "view == LambdaTreeView && viewItem == LogStream",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.ViewResponsePayload",
+          "when": "view == LambdaTreeView && viewItem == ResponsePayload",
           "group": "inline"
         }
       ]

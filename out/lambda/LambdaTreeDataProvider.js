@@ -37,6 +37,20 @@ class LambdaTreeDataProvider {
         this.RemoveLambdaNode(Region, Lambda);
         this.Refresh();
     }
+    AddResponsePayload(node, payloadString) {
+        let now = new Date();
+        let currentTime = now.getHours().toString().padStart(2, '0') + ':' +
+            now.getMinutes().toString().padStart(2, '0') + ':' +
+            now.getSeconds().toString().padStart(2, '0');
+        let treeItem = new LambdaTreeItem_1.LambdaTreeItem("Response - " + currentTime, LambdaTreeItem_1.TreeItemType.ResponsePayload);
+        treeItem.Region = node.Region;
+        treeItem.Lambda = node.Lambda;
+        treeItem.ResponsePayload = payloadString;
+        treeItem.Parent = node;
+        node.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+        node.Children.push(treeItem);
+        this.Refresh();
+    }
     AddLogStreams(node, LogStreams) {
         for (var streamName of LogStreams) {
             if (node.Children.find((item) => item.LogStreamName === streamName)) {

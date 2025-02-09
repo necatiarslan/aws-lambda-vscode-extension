@@ -294,6 +294,7 @@ class LambdaTreeView {
             return;
         }
         ui.logToOutput("api.TriggerLambda Success !!!");
+        ui.logToOutput("RequestId: " + result.result.$metadata.requestId);
         // Convert Uint8Array to string
         const payloadString = new TextDecoder("utf-8").decode(result.result.Payload);
         // Parse the JSON string
@@ -301,7 +302,8 @@ class LambdaTreeView {
         // Pretty-print the JSON with 2-space indentation
         let payload = JSON.stringify(parsedPayload, null, 2);
         if (result.result && result.result.Payload) {
-            ui.logToOutput("api.TriggerLambda PayLoad \n" + payload, undefined, true);
+            this.treeDataProvider.AddResponsePayload(node, payloadString);
+            ui.logToOutput("api.TriggerLambda PayLoad \n" + payload);
         }
         ui.showInfoMessage('Lambda Triggered Successfully');
     }
@@ -471,6 +473,19 @@ class LambdaTreeView {
         this.treeDataProvider.AddPayloadPath(node, selectedPath[0].path);
         this.SaveState();
         ui.showInfoMessage('Payload Path Added Successfully');
+    }
+    async ViewResponsePayload(node) {
+        ui.logToOutput('LambdaTreeView.ViewResponsePayload Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.ResponsePayload) {
+            return;
+        }
+        if (!node.ResponsePayload) {
+            return;
+        }
+        const parsedPayload = JSON.parse(node.ResponsePayload);
+        let jsonString = JSON.stringify(parsedPayload, null, 2);
+        ui.logToOutput(jsonString);
+        ui.ShowTextDocument(jsonString, "json");
     }
 }
 exports.LambdaTreeView = LambdaTreeView;

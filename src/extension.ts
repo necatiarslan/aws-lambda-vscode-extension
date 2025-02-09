@@ -92,6 +92,10 @@ export function activate(context: vscode.ExtensionContext) {
 		await treeView.ViewLog(node);
 	});
 
+	vscode.commands.registerCommand('LambdaTreeView.ViewResponsePayload', async (node: LambdaTreeItem) => {
+		await treeView.ViewResponsePayload(node);
+	});
+
 	vscode.commands.registerCommand('LambdaTreeView.RefreshLogs', async (node: LambdaTreeItem) => {
 		await treeView.RefreshLogStreams(node);
 	});

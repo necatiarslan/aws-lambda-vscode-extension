@@ -14,6 +14,7 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public TriggerConfigPath: string | undefined
 	private codePath: string | undefined;
 	public PayloadPath: string | undefined;
+	public ResponsePayload: string | undefined;
 
 	constructor(text:string, treeItemType:TreeItemType) {
 		super(text)
@@ -78,6 +79,11 @@ export class LambdaTreeItem extends vscode.TreeItem {
 		{
 			this.iconPath = new vscode.ThemeIcon('bracket-error');
 			this.contextValue = "TriggerNoPayload"
+		}
+		else if(this.TreeItemType === TreeItemType.ResponsePayload)
+		{
+			this.iconPath = new vscode.ThemeIcon('output');
+			this.contextValue = "ResponsePayload"
 		}
 		else if(this.TreeItemType === TreeItemType.LogGroup)
 		{
@@ -163,4 +169,5 @@ export enum TreeItemType{
 	TriggerNoPayload= 8,
 	TriggerWithPayload= 9,
 	TriggerFilePayload= 10,
+	ResponsePayload= 11
 }

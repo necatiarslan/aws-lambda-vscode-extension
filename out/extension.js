@@ -70,6 +70,9 @@ function activate(context) {
     vscode.commands.registerCommand('LambdaTreeView.ViewLog', async (node) => {
         await treeView.ViewLog(node);
     });
+    vscode.commands.registerCommand('LambdaTreeView.ViewResponsePayload', async (node) => {
+        await treeView.ViewResponsePayload(node);
+    });
     vscode.commands.registerCommand('LambdaTreeView.RefreshLogs', async (node) => {
         await treeView.RefreshLogStreams(node);
     });
