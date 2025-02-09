@@ -15,6 +15,9 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	private codePath: string | undefined;
 	public PayloadPath: string | undefined;
 	public ResponsePayload: string | undefined;
+	public EnvironmentVariableName: string | undefined;
+	public EnvironmentVariableValue: string | undefined;
+	public IsRunning: boolean = false;
 
 	constructor(text:string, treeItemType:TreeItemType) {
 		super(text)
@@ -100,10 +103,25 @@ export class LambdaTreeItem extends vscode.TreeItem {
 			this.iconPath = new vscode.ThemeIcon('file');
 			this.contextValue = "CodePath"
 		}
+		else if(this.TreeItemType === TreeItemType.EnvironmentVariableGroup)
+		{
+			this.iconPath = new vscode.ThemeIcon('wrench');
+			this.contextValue = "EnvironmentVariableGroup"
+		}
+		else if(this.TreeItemType === TreeItemType.EnvironmentVariable)
+		{
+			this.iconPath = new vscode.ThemeIcon('wrench');
+			this.contextValue = "EnvironmentVariable"
+		}
 		else
 		{
 			this.iconPath = new vscode.ThemeIcon('circle-outline');
 			this.contextValue = "Other"
+		}
+
+		if(this.IsRunning)
+		{
+			this.iconPath = new vscode.ThemeIcon('loading~spin');
 		}
 	}
 
@@ -169,5 +187,7 @@ export enum TreeItemType{
 	TriggerNoPayload= 8,
 	TriggerWithPayload= 9,
 	TriggerFilePayload= 10,
-	ResponsePayload= 11
+	ResponsePayload= 11,
+	EnvironmentVariableGroup= 12,
+	EnvironmentVariable= 13
 }

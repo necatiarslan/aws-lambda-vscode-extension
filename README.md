@@ -60,7 +60,7 @@ https://github.com/necatiarslan/aws-lambda-vscode-extension/issues/new
 ## Todo
 - Env Variable Node, Set Env Variable
 - Tags Node
-- Others Node
+- Info Node
   - Description
   - Runtime
   - FunctionArn

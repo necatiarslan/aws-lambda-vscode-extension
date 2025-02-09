@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
+exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const credential_providers_1 = require("@aws-sdk/credential-providers");
 const client_lambda_1 = require("@aws-sdk/client-lambda");
@@ -368,6 +368,28 @@ async function GetLambda(Region, LambdaName) {
 }
 exports.GetLambda = GetLambda;
 const client_lambda_4 = require("@aws-sdk/client-lambda");
+async function GetLambdaConfiguration(Region, LambdaName) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = await GetLambdaClient(Region);
+        const command = new client_lambda_4.GetFunctionConfigurationCommand({
+            FunctionName: LambdaName,
+        });
+        const response = await lambda.send(command);
+        result.result = response;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage("api.GetLambdaConfiguration Error !!!", error);
+        ui.logToOutput("api.GetLambdaConfiguration Error !!!", error);
+        return result;
+    }
+}
+exports.GetLambdaConfiguration = GetLambdaConfiguration;
+const client_lambda_5 = require("@aws-sdk/client-lambda");
 async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -378,7 +400,7 @@ async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         const zipFileContents = fs.readFileSync(zipresponse.result);
-        const command = new client_lambda_4.UpdateFunctionCodeCommand({
+        const command = new client_lambda_5.UpdateFunctionCodeCommand({
             FunctionName: LambdaName,
             ZipFile: zipFileContents,
         });

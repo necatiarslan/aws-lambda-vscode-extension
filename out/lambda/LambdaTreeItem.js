@@ -11,6 +11,7 @@ class LambdaTreeItem extends vscode.TreeItem {
         this.Region = "";
         this.Children = [];
         this.IsHidden = false;
+        this.IsRunning = false;
         this.Text = text;
         this.TreeItemType = treeItemType;
         this.refreshUI();
@@ -79,9 +80,20 @@ class LambdaTreeItem extends vscode.TreeItem {
             this.iconPath = new vscode.ThemeIcon('file');
             this.contextValue = "CodePath";
         }
+        else if (this.TreeItemType === TreeItemType.EnvironmentVariableGroup) {
+            this.iconPath = new vscode.ThemeIcon('wrench');
+            this.contextValue = "EnvironmentVariableGroup";
+        }
+        else if (this.TreeItemType === TreeItemType.EnvironmentVariable) {
+            this.iconPath = new vscode.ThemeIcon('wrench');
+            this.contextValue = "EnvironmentVariable";
+        }
         else {
             this.iconPath = new vscode.ThemeIcon('circle-outline');
             this.contextValue = "Other";
+        }
+        if (this.IsRunning) {
+            this.iconPath = new vscode.ThemeIcon('loading~spin');
         }
     }
     IsAnyChidrenFav() {
@@ -133,5 +145,7 @@ var TreeItemType;
     TreeItemType[TreeItemType["TriggerWithPayload"] = 9] = "TriggerWithPayload";
     TreeItemType[TreeItemType["TriggerFilePayload"] = 10] = "TriggerFilePayload";
     TreeItemType[TreeItemType["ResponsePayload"] = 11] = "ResponsePayload";
+    TreeItemType[TreeItemType["EnvironmentVariableGroup"] = 12] = "EnvironmentVariableGroup";
+    TreeItemType[TreeItemType["EnvironmentVariable"] = 13] = "EnvironmentVariable";
 })(TreeItemType = exports.TreeItemType || (exports.TreeItemType = {}));
 //# sourceMappingURL=LambdaTreeItem.js.map

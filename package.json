@@ -2,11 +2,11 @@
   "name": "aws-lambda-vscode-extension",
   "displayName": "Aws Lambda",
   "description": "Trigger & Monitor your Aws Lambda Functions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "NecatiARSLAN",
   "repository": {
     "type": "git",
-    "url": "https://github.com/necatiarslan/aws-lambda"
+    "url": "https://github.com/necatiarslan/aws-lambda-vscode-extension"
   },
   "icon": "media/aws-lambda-logo-extension.png",
   "engines": {

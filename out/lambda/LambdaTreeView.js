@@ -253,7 +253,11 @@ class LambdaTreeView {
     }
     async TriggerLambda(node) {
         ui.logToOutput('LambdaTreeView.TriggerLambda Started');
+        if (node.IsRunning) {
+            return;
+        }
         //if(node.TreeItemType !== TreeItemType.Lambda && node.TreeItemType !== TreeItemType.TriggerSavedPayload) { return;}
+        this.SetNodeRunning(node, true);
         let param = {};
         if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.TriggerNoPayload) {
             param = {};
@@ -261,15 +265,18 @@ class LambdaTreeView {
         else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.TriggerFilePayload) {
             if (!node.PayloadPath) {
                 ui.showWarningMessage('Payload Path is not set');
+                this.SetNodeRunning(node, false);
                 return;
             }
             let payload = await vscode.workspace.openTextDocument(node.PayloadPath);
             if (payload === undefined) {
                 ui.showWarningMessage('File not found: ' + node.PayloadPath);
+                this.SetNodeRunning(node, false);
                 return;
             }
             if (!api.isJsonString(payload.getText())) {
                 ui.showWarningMessage('File content is not a valid JSON: ' + node.PayloadPath);
+                this.SetNodeRunning(node, false);
                 return;
             }
             param = api.ParseJson(payload.getText());
@@ -281,6 +288,7 @@ class LambdaTreeView {
             }
             if (config && !api.isJsonString(config)) {
                 ui.showInfoMessage('Config should be a valid JSON');
+                this.SetNodeRunning(node, false);
                 return;
             }
             if (config) {
@@ -291,6 +299,7 @@ class LambdaTreeView {
         if (!result.isSuccessful) {
             ui.logToOutput("api.TriggerLambda Error !!!", result.error);
             ui.showErrorMessage('Trigger Lambda Error !!!', result.error);
+            this.SetNodeRunning(node, false);
             return;
         }
         ui.logToOutput("api.TriggerLambda Success !!!");
@@ -306,20 +315,32 @@ class LambdaTreeView {
             ui.logToOutput("api.TriggerLambda PayLoad \n" + payload);
         }
         ui.showInfoMessage('Lambda Triggered Successfully');
+        this.SetNodeRunning(node, false);
+    }
+    SetNodeRunning(node, isRunning) {
+        node.IsRunning = isRunning;
+        node.refreshUI();
+        this.treeDataProvider.Refresh();
     }
     async ViewLatestLog(node) {
         ui.logToOutput('LambdaTreeView.ViewLatestLog Started');
+        if (node.IsRunning) {
+            return;
+        }
         if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Lambda) {
             return;
         }
+        this.SetNodeRunning(node, true);
         let resultLogStream = await api.GetLatestLambdaLogStreamName(node.Region, node.Lambda);
         if (!resultLogStream.isSuccessful) {
             ui.logToOutput("api.GetLatestLambdaLogStreamName Error !!!", resultLogStream.error);
             ui.showErrorMessage('Get Lambda LogStream Error !!!', resultLogStream.error);
+            this.SetNodeRunning(node, false);
             return;
         }
         const logGroupName = `/aws/lambda/${node.Lambda}`;
         CloudWatchLogView_1.CloudWatchLogView.Render(this.context.extensionUri, node.Region, logGroupName, resultLogStream.result);
+        this.SetNodeRunning(node, false);
     }
     async SelectAwsProfile(node) {
         ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');
@@ -374,18 +395,25 @@ class LambdaTreeView {
         if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Code) {
             return;
         }
+        if (node.IsRunning) {
+            return;
+        }
+        this.SetNodeRunning(node, true);
         if (!node.CodePath) {
             ui.showWarningMessage("Please Set Code Path First");
+            this.SetNodeRunning(node, false);
             return;
         }
         let result = await api.UpdateLambdaCode(node.Region, node.Lambda, node.CodePath);
         if (!result.isSuccessful) {
             ui.logToOutput("api.UpdateLambdaCode Error !!!", result.error);
             ui.showErrorMessage('Update Lambda Code Error !!!', result.error);
+            this.SetNodeRunning(node, false);
             return;
         }
         ui.logToOutput("api.UpdateLambdaCode Success !!!");
         ui.showInfoMessage('Lambda Code Updated Successfully');
+        this.SetNodeRunning(node, false);
     }
     async SetCodePath(node) {
         ui.logToOutput('LambdaTreeView.SetCodePath Started');
@@ -435,18 +463,24 @@ class LambdaTreeView {
     }
     async RefreshLogStreams(node) {
         ui.logToOutput('LambdaTreeView.RefreshLogs Started');
+        if (node.IsRunning) {
+            return;
+        }
         if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.LogGroup) {
             return;
         }
+        this.SetNodeRunning(node, true);
         let resultLogs = await api.GetLatestLambdaLogStreams(node.Region, node.Lambda);
         if (!resultLogs.isSuccessful) {
             ui.logToOutput("api.GetLatestLambdaLogStreams Error !!!", resultLogs.error);
             ui.showErrorMessage('Get Lambda Logs Error !!!', resultLogs.error);
+            this.SetNodeRunning(node, false);
             return;
         }
         ui.logToOutput("api.GetLatestLambdaLogStreams Success !!!");
         this.treeDataProvider.AddLogStreams(node, resultLogs.result);
         ui.showInfoMessage('Lambda Logs Retrieved Successfully');
+        this.SetNodeRunning(node, false);
     }
     async RemovePayloadPath(node) {
         ui.logToOutput('LambdaTreeView.RemovePayloadPath Started');

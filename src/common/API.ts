@@ -452,6 +452,33 @@ export async function GetLambda(
   }
 }
 
+import { GetFunctionConfigurationCommand, GetFunctionConfigurationCommandOutput } from "@aws-sdk/client-lambda";
+
+export async function GetLambdaConfiguration(
+  Region: string,
+  LambdaName: string
+): Promise<MethodResult<GetFunctionConfigurationCommandOutput>> {
+  let result: MethodResult<GetFunctionConfigurationCommandOutput> = new MethodResult<GetFunctionConfigurationCommandOutput>();
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    const command = new GetFunctionConfigurationCommand({
+      FunctionName: LambdaName,
+    });
+
+    const response = await lambda.send(command);
+    result.result = response;
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.GetLambdaConfiguration Error !!!", error);
+    ui.logToOutput("api.GetLambdaConfiguration Error !!!", error);
+    return result;
+  }
+}
 
 import {
   UpdateFunctionCodeCommand,
