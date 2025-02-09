@@ -8,6 +8,15 @@ var logsOutputChannel: vscode.OutputChannel;
 
 var NEW_LINE:string = " | ";
 
+export async function ShowTextDocument(content: string, language: string = "json") {
+      const document = await vscode.workspace.openTextDocument({
+        language: language,
+        content: content
+      });
+  
+      await vscode.window.showTextDocument(document);
+}
+
 export function getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
   return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 }

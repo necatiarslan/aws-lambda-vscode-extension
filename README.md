@@ -1,5 +1,14 @@
 # Aws Lambda 
 
+## Sponsor Me
+If you find this extension useful, you can [sponsor me on GitHub](https://github.com/sponsors/necatiarslan).
+
+## Survey
+Please take this survey to help me make the extension better.\
+TODO: Add Link
+
+## Endpoint Url
+You can change your aws endpoint url here. To connect your localstack use the following url: http://localhost:4566
 
 ## Aws Credentials Setup
 To Access Aws, you need to configure aws credentials. 
@@ -8,19 +17,35 @@ For more detail on aws credentials \
 https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html \
 https://www.youtube.com/watch?v=SON8sY1iOBU
 
+Extension supports all types of credentials. It searches for aws credentials in the following order:
+- Environment Variables:
+  - AWS_ACCESS_KEY_ID
+  - AWS_SECRET_ACCESS_KEY
+  - AWS_SESSION_TOKEN (optional, for temporary credentials)
+
+- Shared Credentials File:
+  - ~/.aws/credentials (default profile or a named profile)
+  - ~/.aws/config (for region settings)
+
+- Amazon EC2 Instance Metadata Service (IMDS):
+  - When running on an EC2 instance with an attached IAM role, credentials are retrieved from http://169.254.169.254/latest/meta-data/iam/security-credentials/
+
+- Amazon ECS Container Credentials:
+  - When running in an ECS task, the SDK retrieves credentials from the container metadata URI (provided by ECS agent).
+
+- SSO Credentials:
+  - If you've configured SSO using the AWS CLI, the SDK will attempt to retrieve credentials from your SSO login session.
+
+- Web Identity Token (IAM Roles for Service Accounts):
+  - For federated identity access, such as AWS IAM roles for Kubernetes (EKS).
+
 ## Bug Report
 To report your bugs or request new features, use link below\
 https://github.com/necatiarslan/aws-lambda-vscode-extension/issues/new
 
 
 ## Todo
-- Select Region before adding lambda
-- Add Region to LambdaTreeItem
-- (node:58629) NOTE: The AWS SDK for JavaScript (v2) is in maintenance mode.
-SDK releases are limited to address critical bug fixes and security issues only.
-Please migrate your code to use AWS SDK for JavaScript (v3).
-For more information, check the blog post at https://a.co/cUPnyil
-(Use `Code Helper (Plugin) --trace-warnings ...` to show where the warning was created)
+- 
 
 ## Nice To Have
 - 

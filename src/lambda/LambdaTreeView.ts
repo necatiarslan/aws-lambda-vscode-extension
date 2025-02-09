@@ -228,11 +228,7 @@ export class LambdaTreeView {
 	}
 
 	async GetFilterProfilePrompt() {
-		if(await api.IsSharedIniFileCredentials())
-		{
-			return "Profile:" + this.AwsProfile + " ";
-		}
-		return ""
+		return "Profile:" + this.AwsProfile + " ";
 	}
 
 	GetBoolenSign(variable: boolean){
@@ -360,27 +356,20 @@ export class LambdaTreeView {
 		
 		if(node.TreeItemType !== TreeItemType.Lambda) { return;}
 
-		let resultLogs = await api.GetLatestLambdaLogs(node.Region, node.Lambda);
-		if(!resultLogs.isSuccessful)
+		let resultLogStream = await api.GetLatestLambdaLogStreamName(node.Region, node.Lambda);
+		if(!resultLogStream.isSuccessful)
 		{
-			ui.logToOutput("api.GetLatestLambdaLogs Error !!!", resultLogs.error);
-			ui.showErrorMessage('Get Lambda Logs Error !!!', resultLogs.error);
+			ui.logToOutput("api.GetLatestLambdaLogStreamName Error !!!", resultLogStream.error);
+			ui.showErrorMessage('Get Lambda LogStream Error !!!', resultLogStream.error);
 			return;
 		}
-		ui.logToOutput("api.GetLatestLambdaLogs Success !!!");
-		ui.logToOutput("api.GetLatestLambdaLogs Logs \n" + resultLogs.result, undefined, true);
-		ui.showInfoMessage('Lambda Latest Logs Retrieved Successfully');
 		
+		const logGroupName = `/aws/lambda/${node.Lambda}`;
+		CloudWatchLogView.Render(this.context.extensionUri, node.Region, logGroupName, resultLogStream.result);
 	}
 
 	async SelectAwsProfile(node: LambdaTreeItem) {
 		ui.logToOutput('LambdaTreeView.SelectAwsProfile Started');
-
-		if (!api.IsSharedIniFileCredentials())
-		{
-			ui.showWarningMessage("Your Aws Access method is not credentials file");
-			return;
-		}
 
 		var result = await api.GetAwsProfileList();
 		if(!result.isSuccessful){ return; }
@@ -419,9 +408,10 @@ export class LambdaTreeView {
 			ui.showErrorMessage('Get Lambda Error !!!', result.error);
 			return;
 		}
-		let codePath = this.treeDataProvider.GetCodePath(node.Region, node.Lambda);
-		ui.logToOutput("Code Path : " + codePath);
-		ui.logToOutput(JSON.stringify(result.result, null, 4));
+		let jsonString = JSON.stringify(result.result, null, 2);
+		ui.logToOutput(jsonString, undefined, true);
+		ui.ShowTextDocument(jsonString, "json");
+
 	}
 
 	async UpdateLambdaCodes(node: LambdaTreeItem) {

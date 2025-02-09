@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CopyListToClipboard = exports.CopyToClipboard = exports.bytesToText = exports.isValidDate = exports.isJsonString = exports.convertMsToTime = exports.getDuration = exports.getSeconds = exports.getMilliSeconds = exports.openFile = exports.getExtensionVersion = exports.showErrorMessage = exports.showWarningMessage = exports.showInfoMessage = exports.logToOutput = exports.showOutputMessage = exports.getUri = void 0;
+exports.CopyListToClipboard = exports.CopyToClipboard = exports.bytesToText = exports.isValidDate = exports.isJsonString = exports.convertMsToTime = exports.getDuration = exports.getSeconds = exports.getMilliSeconds = exports.openFile = exports.getExtensionVersion = exports.showErrorMessage = exports.showWarningMessage = exports.showInfoMessage = exports.logToOutput = exports.showOutputMessage = exports.getUri = exports.ShowTextDocument = void 0;
 const vscode = require("vscode");
 const fs_1 = require("fs");
 const path_1 = require("path");
@@ -8,6 +8,14 @@ const MethodResult_1 = require("./MethodResult");
 var outputChannel;
 var logsOutputChannel;
 var NEW_LINE = " | ";
+async function ShowTextDocument(content, language = "json") {
+    const document = await vscode.workspace.openTextDocument({
+        language: language,
+        content: content
+    });
+    await vscode.window.showTextDocument(document);
+}
+exports.ShowTextDocument = ShowTextDocument;
 function getUri(webview, extensionUri, pathList) {
     return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 }

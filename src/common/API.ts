@@ -15,29 +15,13 @@ import * as LambdaTreeView from '../lambda/LambdaTreeView';
 import * as fs from 'fs';
 import * as archiver from 'archiver';
 
-export async function IsSharedIniFileCredentials(credentials:any|undefined=undefined)
-{
-  return await GetCredentialProviderName(credentials) === "SharedIniFileCredentials"
-}
-
-export async function IsEnvironmentCredentials(credentials:any|undefined=undefined)
-{
-  return await GetCredentialProviderName(credentials) === "EnvironmentCredentials"
-}
-
-export async function GetCredentialProviderName(credentials:any|undefined=undefined)
-{
-  if(!credentials)
-  {
-    credentials = GetCredentials();
-  }
-  return credentials.constructor.name;
-}
-
 export async function GetCredentials() {
   let credentials;
 
   try {
+    if (LambdaTreeView.LambdaTreeView.Current) {
+      process.env.AWS_PROFILE = LambdaTreeView.LambdaTreeView.Current.AwsProfile ;
+    }
     // Get credentials using the default provider chain.
     const provider = fromNodeProviderChain();
     credentials = await provider();
@@ -46,22 +30,6 @@ export async function GetCredentials() {
       throw new Error("Aws credentials not found !!!");
     }
 
-    // If the credentials come from a shared INI file and the current profile is not "default",
-    // re-resolve credentials using the specified profile.
-    if (await IsSharedIniFileCredentials(credentials)) {
-      if (
-        LambdaTreeView.LambdaTreeView.Current &&
-        LambdaTreeView.LambdaTreeView.Current.AwsProfile !== "default"
-      ) {
-        credentials = await fromIni({
-          profile: LambdaTreeView.LambdaTreeView.Current.AwsProfile,
-        })();
-      }
-    }
-
-    ui.logToOutput(
-      "Aws credentials provider " + (await GetCredentialProviderName(credentials))
-    );
     ui.logToOutput("Aws credentials AccessKeyId=" + credentials.accessKeyId);
     return credentials;
   } catch (error: any) {
@@ -200,6 +168,58 @@ import {
   DescribeLogStreamsCommand,
   GetLogEventsCommand,
 } from "@aws-sdk/client-cloudwatch-logs";
+
+export async function GetLatestLambdaLogStreamName(
+  Region: string,
+  Lambda: string
+): Promise<MethodResult<string>> {
+  ui.logToOutput("GetLatestLambdaLogStreamName for Lambda function: " + Lambda);
+  let result: MethodResult<string> = new MethodResult<string>();
+
+  try {
+    // Get the log group name
+    const logGroupName = `/aws/lambda/${Lambda}`;
+    const cloudwatchlogs = await GetCloudWatchClient(Region);
+
+    // Get the streams sorted by the latest event time
+    const describeLogStreamsCommand = new DescribeLogStreamsCommand({
+      logGroupName,
+      orderBy: "LastEventTime",
+      descending: true,
+      limit: 1,
+    });
+
+    const streamsResponse = await cloudwatchlogs.send(describeLogStreamsCommand);
+
+    if (!streamsResponse.logStreams || streamsResponse.logStreams.length === 0) {
+      result.isSuccessful = false;
+      result.error = new Error("No log streams found for this Lambda function.");
+      ui.showErrorMessage("No log streams found for this Lambda function.", result.error);
+      ui.logToOutput("No log streams found for this Lambda function.");
+      return result;
+    }
+
+    // Get the latest log events from the first stream
+    const logStreamName = streamsResponse.logStreams[0].logStreamName;
+    if (!logStreamName) {
+      result.isSuccessful = false;
+      result.error = new Error("No log stream name found for this Lambda function.");
+      ui.showErrorMessage("No log stream name found for this Lambda function.", result.error);
+      ui.logToOutput("No log stream name found for this Lambda function.");
+      return result;
+    }
+
+    result.result = logStreamName;
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.GetLatestLambdaLogStreamName Error !!!", error);
+    ui.logToOutput("api.GetLatestLambdaLogStreamName Error !!!", error);
+    return result;
+  }
+}
 
 export async function GetLatestLambdaLogs(
   Region: string,

@@ -169,13 +169,13 @@ class CloudWatchLogView {
                     <vscode-button id="export_logs" >Export</vscode-button>
                 </td>
                 <td style="text-align:right">
-                    <vscode-textfield id="search_text" placeholder="Search" value="${this.SearchText}" style="width: 30ch; margin: 0;" >
+                    <vscode-textfield id="search_text" placeholder="Search" value="${this.SearchText}" style="width: 20ch; margin: 0;" >
                         <vscode-icon slot="content-before" name="search" title="search"></vscode-icon>
                     </vscode-textfield>
-                    <vscode-textfield id="filter_text" placeholder="Filter" value="${this.FilterText}" style="width: 30ch; margin: 0;" >
+                    <vscode-textfield id="filter_text" placeholder="Filter" value="${this.FilterText}" style="width: 10ch; margin: 0;" >
                         <vscode-icon slot="content-before" name="filter" title="filter"></vscode-icon>
                     </vscode-textfield>
-                    <vscode-textfield id="hide_text" placeholder="Hide" value="${this.HideText}" style="width: 30ch; margin: 0;" >
+                    <vscode-textfield id="hide_text" placeholder="Hide" value="${this.HideText}" style="width: 10ch; margin: 0;" >
                         <vscode-icon slot="content-before" name="eye-closed" title="eye-closed"></vscode-icon>
                     </vscode-textfield>
                 </td>
