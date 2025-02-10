@@ -35,7 +35,20 @@ export class LambdaTreeView {
 	}
 
 	async TestAwsConnection(){
-		let response = await api.TestAwsConnection()
+		let response = await api.TestAwsCredentials()
+		if(response.isSuccessful && response.result){
+			ui.logToOutput('Aws Credentials Test Successfull');
+			ui.showInfoMessage('Aws Credentials Test Successfull');
+		}
+		else{
+			ui.logToOutput('LambdaTreeView.TestAwsCredentials Error !!!', response.error);
+			ui.showErrorMessage('Aws Credentials Test Error !!!', response.error);
+		}
+		
+		let selectedRegion = await vscode.window.showInputBox({ placeHolder: 'Enter Region Eg: us-east-1', value: 'us-east-1' });
+		if(selectedRegion===undefined){ return; }
+
+		response = await api.TestAwsConnection(selectedRegion)
 		if(response.isSuccessful && response.result){
 			ui.logToOutput('Aws Connection Test Successfull');
 			ui.showInfoMessage('Aws Connection Test Successfull');
@@ -436,7 +449,6 @@ export class LambdaTreeView {
 			return;
 		}
 		let jsonString = JSON.stringify(result.result, null, 2);
-		ui.logToOutput(jsonString, undefined, true);
 		ui.ShowTextDocument(jsonString, "json");
 
 	}

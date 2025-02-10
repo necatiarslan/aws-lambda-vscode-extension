@@ -591,16 +591,38 @@ export async function ZipTextFile(inputPath: string, outputZipPath?: string): Pr
 import { GetUserCommand, GetUserCommandOutput } from "@aws-sdk/client-iam";
 import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
 
-async function GetSTSClient() {
+async function GetSTSClient(region: string) {
   const credentials = await GetCredentials();
-  const iamClient = new STSClient({ credentials });
+  const iamClient = new STSClient(
+    {
+      region,
+      credentials,
+      endpoint: LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint,
+    }
+  );
   return iamClient;
 }
-export async function TestAwsConnection(): Promise<MethodResult<boolean>> {
+
+export async function TestAwsCredentials(): Promise<MethodResult<boolean>> {
   let result: MethodResult<boolean> = new MethodResult<boolean>();
 
   try {
-    const sts = await GetSTSClient();
+    const credentials = await GetCredentials();
+
+    result.isSuccessful = true;
+    result.result = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    return result;
+  }
+}
+export async function TestAwsConnection(Region: string="us-east-1"): Promise<MethodResult<boolean>> {
+  let result: MethodResult<boolean> = new MethodResult<boolean>();
+
+  try {
+    const sts = await GetSTSClient(Region);
 
     const command = new GetCallerIdentityCommand({});
     const data = await sts.send(command);

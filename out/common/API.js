@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
+exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.TestAwsCredentials = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const credential_providers_1 = require("@aws-sdk/credential-providers");
 const client_lambda_1 = require("@aws-sdk/client-lambda");
@@ -470,15 +470,34 @@ async function ZipTextFile(inputPath, outputZipPath) {
 }
 exports.ZipTextFile = ZipTextFile;
 const client_sts_1 = require("@aws-sdk/client-sts");
-async function GetSTSClient() {
+async function GetSTSClient(region) {
     const credentials = await GetCredentials();
-    const iamClient = new client_sts_1.STSClient({ credentials });
+    const iamClient = new client_sts_1.STSClient({
+        region,
+        credentials,
+        endpoint: LambdaTreeView.LambdaTreeView.Current?.AwsEndPoint,
+    });
     return iamClient;
 }
-async function TestAwsConnection() {
+async function TestAwsCredentials() {
     let result = new MethodResult_1.MethodResult();
     try {
-        const sts = await GetSTSClient();
+        const credentials = await GetCredentials();
+        result.isSuccessful = true;
+        result.result = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        return result;
+    }
+}
+exports.TestAwsCredentials = TestAwsCredentials;
+async function TestAwsConnection(Region = "us-east-1") {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const sts = await GetSTSClient(Region);
         const command = new client_sts_1.GetCallerIdentityCommand({});
         const data = await sts.send(command);
         result.isSuccessful = true;
