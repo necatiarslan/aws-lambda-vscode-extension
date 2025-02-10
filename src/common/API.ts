@@ -79,22 +79,34 @@ export async function GetLambdaList(
     // Get the Lambda client (v3 client)
     const lambda = await GetLambdaClient(region);
     
-    // Create the command to list functions
-    const command = new ListFunctionsCommand({});
+    let allFunctions = [];
+    let marker: string | undefined = undefined;
     
-    // Send the command to the client
-    const functionsList = await lambda.send(command);
+    // Continue fetching pages until no NextMarker is returned
+    do {
+      const command:ListFunctionsCommand = new ListFunctionsCommand({ Marker: marker });
+      const functionsList = await lambda.send(command);
+      
+      if (functionsList.Functions) {
+        allFunctions.push(...functionsList.Functions);
+      }
+      
+      // Update marker to the next page (if present)
+      marker = functionsList.NextMarker;
+    } while (marker);
 
+    // Filter functions if a LambdaName filter is provided
     let matchingFunctions;
     if (LambdaName) {
-      matchingFunctions = functionsList.Functions?.filter(
+      matchingFunctions = allFunctions.filter(
         (func) =>
           func.FunctionName?.includes(LambdaName) || LambdaName.length === 0
       );
     } else {
-      matchingFunctions = functionsList.Functions;
+      matchingFunctions = allFunctions;
     }
 
+    // Extract the function names into the result
     if (matchingFunctions && matchingFunctions.length > 0) {
       matchingFunctions.forEach((func) => {
         if (func.FunctionName) result.result.push(func.FunctionName);
@@ -111,6 +123,7 @@ export async function GetLambdaList(
     return result;
   }
 }
+
 
 import {
   InvokeCommand,
@@ -178,7 +191,7 @@ export async function GetLatestLambdaLogStreamName(
 
   try {
     // Get the log group name
-    const logGroupName = `/aws/lambda/${Lambda}`;
+    const logGroupName = GetLambdaLogGroupName(Lambda);
     const cloudwatchlogs = await GetCloudWatchClient(Region);
 
     // Get the streams sorted by the latest event time
@@ -221,6 +234,10 @@ export async function GetLatestLambdaLogStreamName(
   }
 }
 
+export function GetLambdaLogGroupName(Lambda: string) {
+  return `/aws/lambda/${Lambda}`;
+}
+
 export async function GetLatestLambdaLogs(
   Region: string,
   Lambda: string
@@ -230,7 +247,7 @@ export async function GetLatestLambdaLogs(
 
   try {
     // Get the log group name
-    const logGroupName = `/aws/lambda/${Lambda}`;
+    const logGroupName = GetLambdaLogGroupName(Lambda);
     const cloudwatchlogs = await GetCloudWatchClient(Region);
 
     // Get the streams sorted by the latest event time
@@ -305,7 +322,7 @@ export async function GetLatestLambdaLogStreams(
 
   try {
     // Get the log group name
-    const logGroupName = `/aws/lambda/${Lambda}`;
+    const logGroupName = GetLambdaLogGroupName(Lambda);
     const cloudwatchlogs = await GetCloudWatchClient(Region);
 
     // Get the streams sorted by the latest event time
@@ -344,7 +361,7 @@ export async function GetLambdaLogs(
 
   try {
     // Get the log group name
-    const logGroupName = `/aws/lambda/${Lambda}`;
+    const logGroupName = GetLambdaLogGroupName(Lambda);
     const cloudwatchlogs = await GetCloudWatchClient(Region);
 
     const getLogEventsCommand = new GetLogEventsCommand({
@@ -509,6 +526,10 @@ export async function UpdateLambdaCode(
     });
 
     const response = await lambda.send(command);
+
+    // Delete the zip file
+    fs.unlinkSync(zipresponse.result);
+
     result.result = response;
     result.isSuccessful = true;
     return result;
@@ -568,30 +589,28 @@ export async function ZipTextFile(inputPath: string, outputZipPath?: string): Pr
 }
 
 import { GetUserCommand, GetUserCommandOutput } from "@aws-sdk/client-iam";
+import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
 
+async function GetSTSClient() {
+  const credentials = await GetCredentials();
+  const iamClient = new STSClient({ credentials });
+  return iamClient;
+}
 export async function TestAwsConnection(): Promise<MethodResult<boolean>> {
   let result: MethodResult<boolean> = new MethodResult<boolean>();
 
   try {
-    const iam = await GetIAMClient();
+    const sts = await GetSTSClient();
 
-    const command = new GetUserCommand({});
-    let response: GetUserCommandOutput = await iam.send(command);
+    const command = new GetCallerIdentityCommand({});
+    const data = await sts.send(command);
 
     result.isSuccessful = true;
     result.result = true;
     return result;
   } catch (error: any) {
-    if (error.name.includes("Signature")) {
-      result.isSuccessful = false;
-      result.error = error;
-      ui.showErrorMessage("api.TestAwsConnection Error !!!", error);
-      ui.logToOutput("api.TestAwsConnection Error !!!", error);
-    } else {
-      result.isSuccessful = true;
-      result.result = true;
-    }
-
+    result.isSuccessful = false;
+    result.error = error;
     return result;
   }
 }

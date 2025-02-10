@@ -27,15 +27,23 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	}
 
 	public set CodePath(path: string | undefined) {
+		if(this.TreeItemType !== TreeItemType.Code) { return;}
 		this.codePath = path;
-		if (path) {
+		if (path && this.Children.length === 0) {
 			let node = new LambdaTreeItem(path, TreeItemType.CodePath)
 			node.Lambda = this.Lambda;
 			node.Region = this.Region;
 			node.Parent = this;
 			this.Children.push(node);
 			this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-		} else {
+		}
+		else if (path && this.Children.length > 0) {
+			let node = this.Children[0];
+			node.label = path;
+			node.Text = path;
+		}
+		else 
+		{
 			this.Children = [];
 			this.collapsibleState = vscode.TreeItemCollapsibleState.None;
 		}

@@ -1,8 +1,8 @@
 {
   "name": "aws-lambda-vscode-extension",
   "displayName": "Aws Lambda",
-  "description": "Trigger & Monitor your Aws Lambda Functions",
-  "version": "1.0.1",
+  "description": "Update, Trigger & Monitor your Aws Lambda Functions",
+  "version": "1.0.2",
   "publisher": "NecatiARSLAN",
   "repository": {
     "type": "git",
@@ -138,8 +138,20 @@
         "icon": "$(lightbulb)"
       },
       {
+        "command": "LambdaTreeView.TestAwsConnection",
+        "title": "Test Aws Connection"
+      },
+      {
         "command": "LambdaTreeView.UpdateAwsEndPoint",
         "title": "Update Aws EndPoint"
+      },
+      {
+        "command": "LambdaTreeView.Donate",
+        "title": "Donate"
+      },
+      {
+        "command": "LambdaTreeView.BugAndNewFeature",
+        "title": "Bug and New Feature"
       }
     ],
     "menus": {
@@ -175,7 +187,22 @@
           "group": "navigation@7"
         },
         {
+          "command": "LambdaTreeView.TestAwsConnection",
+          "when": "view == LambdaTreeView",
+          "group": "other"
+        },
+        {
           "command": "LambdaTreeView.UpdateAwsEndPoint",
+          "when": "view == LambdaTreeView",
+          "group": "other"
+        },
+        {
+          "command": "LambdaTreeView.Donate",
+          "when": "view == LambdaTreeView",
+          "group": "other"
+        },
+        {
+          "command": "LambdaTreeView.BugAndNewFeature",
           "when": "view == LambdaTreeView",
           "group": "other"
         }
@@ -289,7 +316,7 @@
     "viewsWelcome": [
       {
         "view": "LambdaTreeView",
-        "contents": "Please click [+] to add your lambda Functions. \n [Add Lambda](command:LambdaTreeView.AddLambda) \n Leave lambda name empty to get all your buckets. You can enter lambda name partially. \n If you can not connect after a while check your Aws Credentials, Network and Proxy settings. \n\n\n\n To Access Aws, you need to configure aws credentials. \n For more detail on Aws Credentials [Click Here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) \n For a Youtube Tutorial [Click Here](https://www.youtube.com/watch?v=SON8sY1iOBU) \n [Test Aws Credentials](command:LambdaTreeView.AwsCredentialsSetup) \n [Update Aws EndPoint](command:LambdaTreeView.UpdateAwsEndPoint)"
+        "contents": "Please click [+] to add your lambda Functions. \n [Add Lambda](command:LambdaTreeView.AddLambda) \n Leave lambda name empty to get all your buckets. You can enter lambda name partially. \n If you can not connect after a while check your Aws Credentials, Network and Proxy settings. \n\n\n\n To Access Aws, you need to configure aws credentials. \n For more detail on Aws Credentials [Click Here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) \n For a Youtube Tutorial [Click Here](https://www.youtube.com/watch?v=SON8sY1iOBU) \n [Update Aws EndPoint](command:LambdaTreeView.UpdateAwsEndPoint)"
       }
     ]
   },
@@ -315,6 +342,7 @@
     "@aws-sdk/client-cloudwatch-logs": "^3.738.0",
     "@aws-sdk/client-iam": "^3.738.0",
     "@aws-sdk/client-lambda": "^3.738.0",
+    "@aws-sdk/client-sts": "^3.744.0",
     "@aws-sdk/credential-providers": "^3.738.0",
     "@vscode-elements/elements": "^1.11.0",
     "@vscode/codicons": "^0.0.36",

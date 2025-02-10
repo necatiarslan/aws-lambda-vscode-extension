@@ -26,10 +26,23 @@ class LambdaTreeView {
         this.Refresh();
         context.subscriptions.push(this.view);
         this.SetFilterMessage();
-        this.TestAwsConnection();
     }
-    TestAwsConnection() {
-        api.TestAwsConnection();
+    async TestAwsConnection() {
+        let response = await api.TestAwsConnection();
+        if (response.isSuccessful && response.result) {
+            ui.logToOutput('Aws Connection Test Successfull');
+            ui.showInfoMessage('Aws Connection Test Successfull');
+        }
+        else {
+            ui.logToOutput('LambdaTreeView.TestAwsConnection Error !!!', response.error);
+            ui.showErrorMessage('Aws Connection Test Error !!!', response.error);
+        }
+    }
+    BugAndNewFeature() {
+        vscode.env.openExternal(vscode.Uri.parse('https://github.com/necatiarslan/aws-lambda-vscode-extension/issues/new'));
+    }
+    Donate() {
+        vscode.env.openExternal(vscode.Uri.parse('https://github.com/sponsors/necatiarslan'));
     }
     Refresh() {
         ui.logToOutput('LambdaTreeView.refresh Started');
@@ -338,7 +351,7 @@ class LambdaTreeView {
             this.SetNodeRunning(node, false);
             return;
         }
-        const logGroupName = `/aws/lambda/${node.Lambda}`;
+        const logGroupName = api.GetLambdaLogGroupName(node.Lambda);
         CloudWatchLogView_1.CloudWatchLogView.Render(this.context.extensionUri, node.Region, logGroupName, resultLogStream.result);
         this.SetNodeRunning(node, false);
     }
@@ -435,6 +448,7 @@ class LambdaTreeView {
         node.CodePath = selectedPath[0].path;
         this.treeDataProvider.AddCodePath(node.Region, node.Lambda, node.CodePath);
         this.SaveState();
+        ui.logToOutput("Code Path: " + node.CodePath);
         ui.showInfoMessage('Code Path Set Successfully');
     }
     async UnsetCodePath(node) {
@@ -448,7 +462,8 @@ class LambdaTreeView {
         node.CodePath = undefined;
         this.treeDataProvider.RemoveCodePath(node.Region, node.Lambda);
         this.SaveState();
-        ui.showInfoMessage('Code Path Set Successfully');
+        ui.logToOutput("Code Path: " + node.CodePath);
+        ui.showInfoMessage('Code Path Removed Successfully');
     }
     async ViewLog(node) {
         ui.logToOutput('LambdaTreeView.ViewLog Started');
@@ -458,7 +473,7 @@ class LambdaTreeView {
         if (!node.LogStreamName) {
             return;
         }
-        const logGroupName = `/aws/lambda/${node.Lambda}`;
+        const logGroupName = api.GetLambdaLogGroupName(node.Lambda);
         CloudWatchLogView_1.CloudWatchLogView.Render(this.context.extensionUri, node.Region, logGroupName, node.LogStreamName);
     }
     async RefreshLogStreams(node) {

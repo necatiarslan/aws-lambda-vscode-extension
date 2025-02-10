@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
+exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const credential_providers_1 = require("@aws-sdk/credential-providers");
 const client_lambda_1 = require("@aws-sdk/client-lambda");
@@ -66,17 +66,27 @@ async function GetLambdaList(region, LambdaName) {
     try {
         // Get the Lambda client (v3 client)
         const lambda = await GetLambdaClient(region);
-        // Create the command to list functions
-        const command = new client_lambda_1.ListFunctionsCommand({});
-        // Send the command to the client
-        const functionsList = await lambda.send(command);
+        let allFunctions = [];
+        let marker = undefined;
+        // Continue fetching pages until no NextMarker is returned
+        do {
+            const command = new client_lambda_1.ListFunctionsCommand({ Marker: marker });
+            const functionsList = await lambda.send(command);
+            if (functionsList.Functions) {
+                allFunctions.push(...functionsList.Functions);
+            }
+            // Update marker to the next page (if present)
+            marker = functionsList.NextMarker;
+        } while (marker);
+        // Filter functions if a LambdaName filter is provided
         let matchingFunctions;
         if (LambdaName) {
-            matchingFunctions = functionsList.Functions?.filter((func) => func.FunctionName?.includes(LambdaName) || LambdaName.length === 0);
+            matchingFunctions = allFunctions.filter((func) => func.FunctionName?.includes(LambdaName) || LambdaName.length === 0);
         }
         else {
-            matchingFunctions = functionsList.Functions;
+            matchingFunctions = allFunctions;
         }
+        // Extract the function names into the result
         if (matchingFunctions && matchingFunctions.length > 0) {
             matchingFunctions.forEach((func) => {
                 if (func.FunctionName)
@@ -142,7 +152,7 @@ async function GetLatestLambdaLogStreamName(Region, Lambda) {
     let result = new MethodResult_1.MethodResult();
     try {
         // Get the log group name
-        const logGroupName = `/aws/lambda/${Lambda}`;
+        const logGroupName = GetLambdaLogGroupName(Lambda);
         const cloudwatchlogs = await GetCloudWatchClient(Region);
         // Get the streams sorted by the latest event time
         const describeLogStreamsCommand = new client_cloudwatch_logs_2.DescribeLogStreamsCommand({
@@ -181,12 +191,16 @@ async function GetLatestLambdaLogStreamName(Region, Lambda) {
     }
 }
 exports.GetLatestLambdaLogStreamName = GetLatestLambdaLogStreamName;
+function GetLambdaLogGroupName(Lambda) {
+    return `/aws/lambda/${Lambda}`;
+}
+exports.GetLambdaLogGroupName = GetLambdaLogGroupName;
 async function GetLatestLambdaLogs(Region, Lambda) {
     ui.logToOutput("Getting logs for Lambda function: " + Lambda);
     let result = new MethodResult_1.MethodResult();
     try {
         // Get the log group name
-        const logGroupName = `/aws/lambda/${Lambda}`;
+        const logGroupName = GetLambdaLogGroupName(Lambda);
         const cloudwatchlogs = await GetCloudWatchClient(Region);
         // Get the streams sorted by the latest event time
         const describeLogStreamsCommand = new client_cloudwatch_logs_2.DescribeLogStreamsCommand({
@@ -249,7 +263,7 @@ async function GetLatestLambdaLogStreams(Region, Lambda) {
     result.result = [];
     try {
         // Get the log group name
-        const logGroupName = `/aws/lambda/${Lambda}`;
+        const logGroupName = GetLambdaLogGroupName(Lambda);
         const cloudwatchlogs = await GetCloudWatchClient(Region);
         // Get the streams sorted by the latest event time
         const describeLogStreamsCommand = new client_cloudwatch_logs_2.DescribeLogStreamsCommand({
@@ -280,7 +294,7 @@ async function GetLambdaLogs(Region, Lambda, LogStreamName) {
     let result = new MethodResult_1.MethodResult();
     try {
         // Get the log group name
-        const logGroupName = `/aws/lambda/${Lambda}`;
+        const logGroupName = GetLambdaLogGroupName(Lambda);
         const cloudwatchlogs = await GetCloudWatchClient(Region);
         const getLogEventsCommand = new client_cloudwatch_logs_2.GetLogEventsCommand({
             logGroupName: logGroupName,
@@ -405,6 +419,8 @@ async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
             ZipFile: zipFileContents,
         });
         const response = await lambda.send(command);
+        // Delete the zip file
+        fs.unlinkSync(zipresponse.result);
         result.result = response;
         result.isSuccessful = true;
         return result;
@@ -453,28 +469,25 @@ async function ZipTextFile(inputPath, outputZipPath) {
     }
 }
 exports.ZipTextFile = ZipTextFile;
-const client_iam_2 = require("@aws-sdk/client-iam");
+const client_sts_1 = require("@aws-sdk/client-sts");
+async function GetSTSClient() {
+    const credentials = await GetCredentials();
+    const iamClient = new client_sts_1.STSClient({ credentials });
+    return iamClient;
+}
 async function TestAwsConnection() {
     let result = new MethodResult_1.MethodResult();
     try {
-        const iam = await GetIAMClient();
-        const command = new client_iam_2.GetUserCommand({});
-        let response = await iam.send(command);
+        const sts = await GetSTSClient();
+        const command = new client_sts_1.GetCallerIdentityCommand({});
+        const data = await sts.send(command);
         result.isSuccessful = true;
         result.result = true;
         return result;
     }
     catch (error) {
-        if (error.name.includes("Signature")) {
-            result.isSuccessful = false;
-            result.error = error;
-            ui.showErrorMessage("api.TestAwsConnection Error !!!", error);
-            ui.logToOutput("api.TestAwsConnection Error !!!", error);
-        }
-        else {
-            result.isSuccessful = true;
-            result.result = true;
-        }
+        result.isSuccessful = false;
+        result.error = error;
         return result;
     }
 }

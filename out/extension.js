@@ -43,8 +43,17 @@ function activate(context) {
     vscode.commands.registerCommand('LambdaTreeView.SelectAwsProfile', (node) => {
         treeView.SelectAwsProfile(node);
     });
+    vscode.commands.registerCommand('LambdaTreeView.TestAwsConnection', () => {
+        treeView.TestAwsConnection();
+    });
     vscode.commands.registerCommand('LambdaTreeView.UpdateAwsEndPoint', () => {
         treeView.UpdateAwsEndPoint();
+    });
+    vscode.commands.registerCommand('LambdaTreeView.Donate', () => {
+        treeView.Donate();
+    });
+    vscode.commands.registerCommand('LambdaTreeView.BugAndNewFeature', () => {
+        treeView.BugAndNewFeature();
     });
     vscode.commands.registerCommand('LambdaTreeView.TriggerLambda', (node) => {
         treeView.TriggerLambda(node);
