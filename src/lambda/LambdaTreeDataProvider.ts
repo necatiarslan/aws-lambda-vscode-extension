@@ -142,7 +142,7 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		for(var i=0; i<LambdaTreeView.Current.PayloadPathList.length; i++)
 		{
 			if(LambdaTreeView.Current.PayloadPathList[i].Region === Region 
-				&& LambdaTreeView.Current.CodePathList[i].Lambda === Lambda)
+				&& LambdaTreeView.Current.PayloadPathList[i].Lambda === Lambda)
 			{
 				this.AddNewPayloadPathNode(triggerItem, LambdaTreeView.Current.PayloadPathList[i].PayloadPath);
 			}

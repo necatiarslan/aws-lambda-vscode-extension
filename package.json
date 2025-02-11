@@ -2,7 +2,7 @@
   "name": "aws-lambda-vscode-extension",
   "displayName": "Aws Lambda",
   "description": "Update, Trigger & Monitor your Aws Lambda Functions",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "NecatiARSLAN",
   "repository": {
     "type": "git",

@@ -116,7 +116,7 @@ class LambdaTreeDataProvider {
         triggerItem.Children.push(triggerWithoutPayload);
         for (var i = 0; i < LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList.length; i++) {
             if (LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].Region === Region
-                && LambdaTreeView_1.LambdaTreeView.Current.CodePathList[i].Lambda === Lambda) {
+                && LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].Lambda === Lambda) {
                 this.AddNewPayloadPathNode(triggerItem, LambdaTreeView_1.LambdaTreeView.Current.PayloadPathList[i].PayloadPath);
             }
         }
