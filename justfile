@@ -18,6 +18,7 @@ npm-doctor:
 
 npm-outdated:
     npm outdated
+    npx npm-check-updates
 
 npm-update:
     npm update

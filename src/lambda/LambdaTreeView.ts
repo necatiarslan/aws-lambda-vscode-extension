@@ -420,7 +420,6 @@ export class LambdaTreeView {
 		this.AwsProfile = selectedAwsProfile;
 		this.SaveState();
 		this.SetFilterMessage();
-		this.TestAwsConnection();
 	}
 
 	async UpdateAwsEndPoint() {

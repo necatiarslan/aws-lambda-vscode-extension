@@ -2,7 +2,7 @@
   "name": "aws-lambda-vscode-extension",
   "displayName": "Aws Lambda",
   "description": "Update, Trigger & Monitor your Aws Lambda Functions",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publisher": "NecatiARSLAN",
   "repository": {
     "type": "git",
@@ -339,14 +339,14 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.738.0",
-    "@aws-sdk/client-iam": "^3.738.0",
-    "@aws-sdk/client-lambda": "^3.738.0",
-    "@aws-sdk/client-sts": "^3.744.0",
-    "@aws-sdk/credential-providers": "^3.738.0",
-    "@vscode-elements/elements": "^1.11.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.750.0",
+    "@aws-sdk/client-iam": "^3.750.0",
+    "@aws-sdk/client-lambda": "^3.750.0",
+    "@aws-sdk/client-sts": "^3.750.0",
+    "@aws-sdk/credential-providers": "^3.750.0",
+    "@vscode-elements/elements": "^1.13.1",
     "@vscode/codicons": "^0.0.36",
     "archiver": "^7.0.1",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.3"
   }
 }
