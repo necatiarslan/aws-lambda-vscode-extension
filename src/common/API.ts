@@ -23,7 +23,7 @@ export async function GetCredentials() {
       process.env.AWS_PROFILE = LambdaTreeView.LambdaTreeView.Current.AwsProfile ;
     }
     // Get credentials using the default provider chain.
-    const provider = fromNodeProviderChain();
+    const provider = fromNodeProviderChain({ignoreCache: true});
     credentials = await provider();
 
     if (!credentials) {

@@ -59,6 +59,8 @@ https://github.com/necatiarslan/aws-lambda-vscode-extension/issues/new
 
 ## Todo
 - Env Variable Node, Set Env Variable
+- Share active profile with other extensions
+- Stick to workspace and profile 
 - Tags Node
 - Info Node
   - Description
