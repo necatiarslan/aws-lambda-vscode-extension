@@ -894,3 +894,88 @@ export async function UpdateLambdaTag(
   // Update is same as add - AWS will overwrite existing tags
   return await AddLambdaTag(Region, LambdaArn, TagKey, TagValue);
 }
+
+export async function DownloadLambdaCode(
+  Region: string,
+  LambdaName: string,
+  DownloadPath: string
+): Promise<MethodResult<string>> {
+  let result: MethodResult<string> = new MethodResult<string>();
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    // Get the Lambda function details which includes the code location
+    const command = new GetFunctionCommand({
+      FunctionName: LambdaName,
+    });
+
+    const response = await lambda.send(command);
+    
+    if (!response.Code?.Location) {
+      result.isSuccessful = false;
+      result.error = new Error("No code location found for this Lambda function");
+      ui.showErrorMessage("No code location found for this Lambda function", result.error);
+      ui.logToOutput("api.DownloadLambdaCode Error: No code location");
+      return result;
+    }
+
+    const codeUrl = response.Code.Location;
+    
+    // Download the zip file from the URL
+    const https = require('https');
+    const http = require('http');
+    const path = require('path');
+    
+    const fileName = `${LambdaName}.zip`;
+    const fullPath = path.join(DownloadPath, fileName);
+    
+    // Determine if we need https or http
+    const client = codeUrl.startsWith('https') ? https : http;
+    
+    return new Promise<MethodResult<string>>((resolve) => {
+      client.get(codeUrl, (response: any) => {
+        if (response.statusCode !== 200) {
+          result.isSuccessful = false;
+          result.error = new Error(`Failed to download: ${response.statusCode}`);
+          ui.showErrorMessage("Failed to download Lambda code", result.error);
+          ui.logToOutput("api.DownloadLambdaCode Error: Download failed");
+          resolve(result);
+          return;
+        }
+
+        const fileStream = fs.createWriteStream(fullPath);
+        response.pipe(fileStream);
+
+        fileStream.on('finish', () => {
+          fileStream.close();
+          result.result = fullPath;
+          result.isSuccessful = true;
+          ui.logToOutput("api.DownloadLambdaCode Success: " + fullPath);
+          resolve(result);
+        });
+
+        fileStream.on('error', (err: any) => {
+          fs.unlink(fullPath, () => {}); // Delete the file on error
+          result.isSuccessful = false;
+          result.error = err;
+          ui.showErrorMessage("Failed to save Lambda code", err);
+          ui.logToOutput("api.DownloadLambdaCode Error: File write failed", err);
+          resolve(result);
+        });
+      }).on('error', (err: any) => {
+        result.isSuccessful = false;
+        result.error = err;
+        ui.showErrorMessage("Failed to download Lambda code", err);
+        ui.logToOutput("api.DownloadLambdaCode Error: Network error", err);
+        resolve(result);
+      });
+    });
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.DownloadLambdaCode Error !!!", error);
+    ui.logToOutput("api.DownloadLambdaCode Error !!!", error);
+    return result;
+  }
+}

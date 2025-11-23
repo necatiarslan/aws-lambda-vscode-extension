@@ -156,6 +156,10 @@ export function activate(context: vscode.ExtensionContext) {
 		await treeView.RemoveTag(node);
 	});
 
+	vscode.commands.registerCommand('LambdaTreeView.DownloadLambdaCode', async (node: LambdaTreeItem) => {
+		await treeView.DownloadLambdaCode(node);
+	});
+
 	ui.logToOutput('Aws Lambda Extension activation completed');
 }
 

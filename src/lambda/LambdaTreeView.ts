@@ -997,4 +997,258 @@ export class LambdaTreeView {
 		
 		this.SetNodeRunning(node, false);
 	}
+	
+	async DownloadLambdaCode(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.DownloadLambdaCode Started');
+		if(node.TreeItemType === TreeItemType.CodePath && node.Parent) { node = node.Parent;}
+		if(node.TreeItemType !== TreeItemType.Code) { return;}
+		if(node.IsRunning) { return; }
+		
+		this.SetNodeRunning(node, true);
+		
+		let downloadPath: string | undefined;
+		
+		// Check if there's an open workspace
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		
+		if (workspaceFolders && workspaceFolders.length > 0) {
+			// Workspace is open, use the root folder
+			const workspaceRoot = workspaceFolders[0].uri.fsPath;
+			
+			// Ask user if they want to save to workspace or choose another location
+			const choice = await vscode.window.showQuickPick(
+				[
+					{ label: '💼 Save to Workspace Root', value: 'workspace', description: workspaceRoot },
+					{ label: '📁 Choose Custom Location', value: 'custom' }
+				],
+				{ placeHolder: 'Where do you want to save the Lambda code?' }
+			);
+			
+			if (!choice) {
+				this.SetNodeRunning(node, false);
+				return;
+			}
+			
+			if (choice.value === 'workspace') {
+				downloadPath = workspaceRoot;
+			} else {
+				// Let user choose custom location
+				const selectedFolder = await vscode.window.showOpenDialog({
+					canSelectFiles: false,
+					canSelectFolders: true,
+					canSelectMany: false,
+					openLabel: 'Select Download Folder'
+				});
+				
+				if (!selectedFolder || selectedFolder.length === 0) {
+					this.SetNodeRunning(node, false);
+					return;
+				}
+				
+				downloadPath = selectedFolder[0].fsPath;
+			}
+		} else {
+			// No workspace open
+			const choice = await vscode.window.showQuickPick(
+				[
+					{ label: '📥 Save to Downloads', value: 'downloads' },
+					{ label: '📁 Choose Custom Location', value: 'custom' }
+				],
+				{ placeHolder: 'Where do you want to save the Lambda code?' }
+			);
+			
+			if (!choice) {
+				this.SetNodeRunning(node, false);
+				return;
+			}
+			
+			if (choice.value === 'downloads') {
+				// Save to Downloads folder
+				const os = require('os');
+				const path = require('path');
+				downloadPath = path.join(os.homedir(), 'Downloads');
+			} else {
+				// Let user choose custom location
+				const selectedFolder = await vscode.window.showOpenDialog({
+					canSelectFiles: false,
+					canSelectFolders: true,
+					canSelectMany: false,
+					openLabel: 'Select Download Folder'
+				});
+				
+				if (!selectedFolder || selectedFolder.length === 0) {
+					this.SetNodeRunning(node, false);
+					return;
+				}
+				
+				downloadPath = selectedFolder[0].fsPath;
+			}
+		}
+		
+		if (!downloadPath) {
+			this.SetNodeRunning(node, false);
+			return;
+		}
+		
+		// Download the Lambda code
+		let result = await api.DownloadLambdaCode(node.Region, node.Lambda, downloadPath);
+		
+		if (!result.isSuccessful) {
+			ui.logToOutput("api.DownloadLambdaCode Error !!!", result.error);
+			ui.showErrorMessage('Download Lambda Code Error !!!', result.error);
+			this.SetNodeRunning(node, false);
+			return;
+		}
+		
+		const zipFilePath = result.result;
+		ui.logToOutput("Lambda code downloaded successfully: " + zipFilePath);
+		
+		// Ask if user wants to unzip
+		const unzipChoice = await vscode.window.showInformationMessage(
+			'Lambda code downloaded successfully! Do you want to unzip it?',
+			'Yes, Unzip',
+			'No, Keep ZIP',
+			'Open Folder'
+		);
+		
+		if (unzipChoice === 'Open Folder') {
+			const path = require('path');
+			const folderUri = vscode.Uri.file(path.dirname(zipFilePath));
+			await vscode.commands.executeCommand('revealFileInOS', folderUri);
+			this.SetNodeRunning(node, false);
+			return;
+		}
+		
+		if (unzipChoice === 'Yes, Unzip') {
+			try {
+				const path = require('path');
+				const fs = require('fs');
+				const yauzl = require('yauzl');
+				
+				const zipDir = path.dirname(zipFilePath);
+				const zipBaseName = path.basename(zipFilePath, '.zip');
+				const extractPath = path.join(zipDir, zipBaseName);
+				
+				// Create extraction directory
+				if (!fs.existsSync(extractPath)) {
+					fs.mkdirSync(extractPath, { recursive: true });
+				}
+				
+				// Unzip the file using yauzl
+				await new Promise<void>((resolve, reject) => {
+					yauzl.open(zipFilePath, { lazyEntries: true }, (err: any, zipfile: any) => {
+						if (err) {
+							reject(err);
+							return;
+						}
+						
+						zipfile.readEntry();
+						
+						zipfile.on('entry', (entry: any) => {
+							const entryPath = path.join(extractPath, entry.fileName);
+							
+							if (/\/$/.test(entry.fileName)) {
+								// Directory
+								fs.mkdirSync(entryPath, { recursive: true });
+								zipfile.readEntry();
+							} else {
+								// File
+								fs.mkdirSync(path.dirname(entryPath), { recursive: true });
+								zipfile.openReadStream(entry, (err: any, readStream: any) => {
+									if (err) {
+										reject(err);
+										return;
+									}
+									
+									const writeStream = fs.createWriteStream(entryPath);
+									readStream.pipe(writeStream);
+									
+									writeStream.on('finish', () => {
+										zipfile.readEntry();
+									});
+									
+									writeStream.on('error', reject);
+								});
+							}
+						});
+						
+						zipfile.on('end', () => {
+							resolve();
+						});
+						
+						zipfile.on('error', reject);
+					});
+				});
+				
+				ui.showInfoMessage(`Files extracted to: ${extractPath}`);
+				ui.logToOutput(`Files extracted to: ${extractPath}`);
+				
+				// Check if there's only one file in the extracted folder
+				const files = fs.readdirSync(extractPath);
+				const actualFiles = files.filter((f: string) => !f.startsWith('.') && f !== '__MACOSX');
+				
+				if (actualFiles.length === 1) {
+					const singleFile = path.join(extractPath, actualFiles[0]);
+					const stats = fs.statSync(singleFile);
+					
+					// Ask if user wants to set this as code path
+					const setCodePathChoice = await vscode.window.showInformationMessage(
+						`Found single ${stats.isDirectory() ? 'folder' : 'file'}: "${actualFiles[0]}". Set as code path?`,
+						'Yes',
+						'No'
+					);
+					
+					if (setCodePathChoice === 'Yes') {
+						node.CodePath = singleFile;
+						this.treeDataProvider.AddCodePath(node.Region, node.Lambda, singleFile);
+						this.SaveState();
+						ui.showInfoMessage('Code path set successfully');
+						ui.logToOutput("Code Path: " + singleFile);
+						
+						// Refresh the tree to show the updated code path
+						this.treeDataProvider.Refresh();
+					}
+				} else {
+					// Multiple files, ask if user wants to set the folder as code path
+					const setCodePathChoice = await vscode.window.showInformationMessage(
+						`Found ${actualFiles.length} items. Set extracted folder as code path?`,
+						'Yes',
+						'No'
+					);
+					
+					if (setCodePathChoice === 'Yes') {
+						node.CodePath = extractPath;
+						this.treeDataProvider.AddCodePath(node.Region, node.Lambda, extractPath);
+						this.SaveState();
+						ui.showInfoMessage('Code path set successfully');
+						ui.logToOutput("Code Path: " + extractPath);
+						
+						// Refresh the tree to show the updated code path
+						this.treeDataProvider.Refresh();
+					}
+				}
+				
+				// Ask if user wants to open the folder
+				const openChoice = await vscode.window.showInformationMessage(
+					'Do you want to open the extracted folder?',
+					'Open Folder',
+					'Cancel'
+				);
+				
+				if (openChoice === 'Open Folder') {
+					const folderUri = vscode.Uri.file(extractPath);
+					await vscode.commands.executeCommand('revealFileInOS', folderUri);
+				}
+				
+			} catch (error: any) {
+				ui.logToOutput("Unzip Error !!!", error);
+				ui.showErrorMessage('Failed to unzip file', error);
+			}
+		} else {
+			// User chose "No, Keep ZIP"
+			ui.showInfoMessage(`Lambda code saved as: ${zipFilePath}`);
+		}
+		
+		this.SetNodeRunning(node, false);
+	}
 }

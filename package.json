@@ -197,6 +197,11 @@
         "command": "LambdaTreeView.RemoveTag",
         "title": "Remove Tag",
         "icon": "$(trash)"
+      },
+      {
+        "command": "LambdaTreeView.DownloadLambdaCode",
+        "title": "Download Lambda Code",
+        "icon": "$(cloud-download)"
       }
     ],
     "menus": {
@@ -310,6 +315,11 @@
         },
         {
           "command": "LambdaTreeView.UpdateLambdaCodes",
+          "when": "view == LambdaTreeView && (viewItem == Code || viewItem == CodePath)",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.DownloadLambdaCode",
           "when": "view == LambdaTreeView && (viewItem == Code || viewItem == CodePath)",
           "group": "inline"
         },
@@ -437,6 +447,7 @@
     "@vscode-elements/elements": "^1.13.1",
     "@vscode/codicons": "^0.0.36",
     "archiver": "^7.0.1",
-    "tmp": "^0.2.3"
+    "tmp": "^0.2.3",
+    "yauzl": "^2.10.0"
   }
 }
