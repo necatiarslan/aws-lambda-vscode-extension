@@ -136,6 +136,26 @@ export function activate(context: vscode.ExtensionContext) {
 		await treeView.LoadInfo(node);
 	});
 
+	vscode.commands.registerCommand('LambdaTreeView.AddEnvironmentVariable', async (node: LambdaTreeItem) => {
+		await treeView.AddEnvironmentVariable(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.RemoveEnvironmentVariable', async (node: LambdaTreeItem) => {
+		await treeView.RemoveEnvironmentVariable(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.AddTag', async (node: LambdaTreeItem) => {
+		await treeView.AddTag(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.UpdateTag', async (node: LambdaTreeItem) => {
+		await treeView.UpdateTag(node);
+	});
+
+	vscode.commands.registerCommand('LambdaTreeView.RemoveTag', async (node: LambdaTreeItem) => {
+		await treeView.RemoveTag(node);
+	});
+
 	ui.logToOutput('Aws Lambda Extension activation completed');
 }
 

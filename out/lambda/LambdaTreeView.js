@@ -714,6 +714,177 @@ class LambdaTreeView {
         this.treeDataProvider.Refresh();
         this.SetNodeRunning(node, false);
     }
+    async AddEnvironmentVariable(node) {
+        ui.logToOutput('LambdaTreeView.AddEnvironmentVariable Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.EnvironmentVariableGroup) {
+            return;
+        }
+        let envVarName = await vscode.window.showInputBox({
+            placeHolder: 'Enter Environment Variable Name (e.g., API_KEY)'
+        });
+        if (!envVarName) {
+            return;
+        }
+        let envVarValue = await vscode.window.showInputBox({
+            placeHolder: 'Enter Environment Variable Value'
+        });
+        if (envVarValue === undefined) {
+            return;
+        }
+        this.SetNodeRunning(node, true);
+        let result = await api.AddLambdaEnvironmentVariable(node.Region, node.Lambda, envVarName, envVarValue);
+        if (!result.isSuccessful) {
+            ui.logToOutput("api.AddLambdaEnvironmentVariable Error !!!", result.error);
+            ui.showErrorMessage('Add Environment Variable Error !!!', result.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        ui.showInfoMessage('Environment Variable Added Successfully');
+        // Refresh the node to show updated values
+        await this.LoadEnvironmentVariables(node);
+        this.SetNodeRunning(node, false);
+    }
+    async RemoveEnvironmentVariable(node) {
+        ui.logToOutput('LambdaTreeView.RemoveEnvironmentVariable Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.EnvironmentVariable) {
+            return;
+        }
+        if (!node.EnvironmentVariableName) {
+            return;
+        }
+        const confirmation = await vscode.window.showWarningMessage(`Are you sure you want to remove environment variable "${node.EnvironmentVariableName}"?`, { modal: true }, 'Yes', 'No');
+        if (confirmation !== 'Yes') {
+            return;
+        }
+        this.SetNodeRunning(node, true);
+        let result = await api.RemoveLambdaEnvironmentVariable(node.Region, node.Lambda, node.EnvironmentVariableName);
+        if (!result.isSuccessful) {
+            ui.logToOutput("api.RemoveLambdaEnvironmentVariable Error !!!", result.error);
+            ui.showErrorMessage('Remove Environment Variable Error !!!', result.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        ui.showInfoMessage('Environment Variable Removed Successfully');
+        // Refresh the parent node to show updated values
+        if (node.Parent) {
+            await this.LoadEnvironmentVariables(node.Parent);
+        }
+        this.SetNodeRunning(node, false);
+    }
+    async AddTag(node) {
+        ui.logToOutput('LambdaTreeView.AddTag Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.TagsGroup) {
+            return;
+        }
+        let tagKey = await vscode.window.showInputBox({
+            placeHolder: 'Enter Tag Key (e.g., Environment)'
+        });
+        if (!tagKey) {
+            return;
+        }
+        let tagValue = await vscode.window.showInputBox({
+            placeHolder: 'Enter Tag Value (e.g., Production)'
+        });
+        if (tagValue === undefined) {
+            return;
+        }
+        this.SetNodeRunning(node, true);
+        // Get Lambda ARN first
+        let lambdaResult = await api.GetLambda(node.Region, node.Lambda);
+        if (!lambdaResult.isSuccessful || !lambdaResult.result.Configuration?.FunctionArn) {
+            ui.logToOutput("api.GetLambda Error !!!", lambdaResult.error);
+            ui.showErrorMessage('Get Lambda Error !!!', lambdaResult.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        const lambdaArn = lambdaResult.result.Configuration.FunctionArn;
+        let result = await api.AddLambdaTag(node.Region, lambdaArn, tagKey, tagValue);
+        if (!result.isSuccessful) {
+            ui.logToOutput("api.AddLambdaTag Error !!!", result.error);
+            ui.showErrorMessage('Add Tag Error !!!', result.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        ui.showInfoMessage('Tag Added Successfully');
+        // Refresh the node to show updated values
+        await this.LoadTags(node);
+        this.SetNodeRunning(node, false);
+    }
+    async UpdateTag(node) {
+        ui.logToOutput('LambdaTreeView.UpdateTag Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Tag) {
+            return;
+        }
+        let newValue = await vscode.window.showInputBox({
+            value: node.TagValue,
+            placeHolder: 'Enter New Value for ' + node.TagKey
+        });
+        if (newValue === undefined) {
+            return;
+        }
+        if (!node.TagKey) {
+            return;
+        }
+        this.SetNodeRunning(node, true);
+        // Get Lambda ARN first
+        let lambdaResult = await api.GetLambda(node.Region, node.Lambda);
+        if (!lambdaResult.isSuccessful || !lambdaResult.result.Configuration?.FunctionArn) {
+            ui.logToOutput("api.GetLambda Error !!!", lambdaResult.error);
+            ui.showErrorMessage('Get Lambda Error !!!', lambdaResult.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        const lambdaArn = lambdaResult.result.Configuration.FunctionArn;
+        let result = await api.UpdateLambdaTag(node.Region, lambdaArn, node.TagKey, newValue);
+        if (!result.isSuccessful) {
+            ui.logToOutput("api.UpdateLambdaTag Error !!!", result.error);
+            ui.showErrorMessage('Update Tag Error !!!', result.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        ui.showInfoMessage('Tag Updated Successfully');
+        // Refresh the parent node to show updated values
+        if (node.Parent) {
+            await this.LoadTags(node.Parent);
+        }
+        this.SetNodeRunning(node, false);
+    }
+    async RemoveTag(node) {
+        ui.logToOutput('LambdaTreeView.RemoveTag Started');
+        if (node.TreeItemType !== LambdaTreeItem_1.TreeItemType.Tag) {
+            return;
+        }
+        if (!node.TagKey) {
+            return;
+        }
+        const confirmation = await vscode.window.showWarningMessage(`Are you sure you want to remove tag "${node.TagKey}"?`, { modal: true }, 'Yes', 'No');
+        if (confirmation !== 'Yes') {
+            return;
+        }
+        this.SetNodeRunning(node, true);
+        // Get Lambda ARN first
+        let lambdaResult = await api.GetLambda(node.Region, node.Lambda);
+        if (!lambdaResult.isSuccessful || !lambdaResult.result.Configuration?.FunctionArn) {
+            ui.logToOutput("api.GetLambda Error !!!", lambdaResult.error);
+            ui.showErrorMessage('Get Lambda Error !!!', lambdaResult.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        const lambdaArn = lambdaResult.result.Configuration.FunctionArn;
+        let result = await api.RemoveLambdaTag(node.Region, lambdaArn, node.TagKey);
+        if (!result.isSuccessful) {
+            ui.logToOutput("api.RemoveLambdaTag Error !!!", result.error);
+            ui.showErrorMessage('Remove Tag Error !!!', result.error);
+            this.SetNodeRunning(node, false);
+            return;
+        }
+        ui.showInfoMessage('Tag Removed Successfully');
+        // Refresh the parent node to show updated values
+        if (node.Parent) {
+            await this.LoadTags(node.Parent);
+        }
+        this.SetNodeRunning(node, false);
+    }
 }
 exports.LambdaTreeView = LambdaTreeView;
 //# sourceMappingURL=LambdaTreeView.js.map

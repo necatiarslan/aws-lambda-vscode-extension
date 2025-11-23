@@ -689,7 +689,9 @@ import {
   UpdateFunctionConfigurationCommand, 
   UpdateFunctionConfigurationCommandOutput,
   ListTagsCommand,
-  ListTagsCommandOutput
+  ListTagsCommandOutput,
+  TagResourceCommand,
+  UntagResourceCommand
 } from "@aws-sdk/client-lambda";
 
 export async function UpdateLambdaEnvironmentVariable(
@@ -738,6 +740,61 @@ export async function UpdateLambdaEnvironmentVariable(
   }
 }
 
+export async function AddLambdaEnvironmentVariable(
+  Region: string,
+  LambdaName: string,
+  EnvironmentVariableName: string,
+  EnvironmentVariableValue: string
+): Promise<MethodResult<UpdateFunctionConfigurationCommandOutput>> {
+  // Same implementation as update - AWS merges the variables
+  return await UpdateLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName, EnvironmentVariableValue);
+}
+
+export async function RemoveLambdaEnvironmentVariable(
+  Region: string,
+  LambdaName: string,
+  EnvironmentVariableName: string
+): Promise<MethodResult<UpdateFunctionConfigurationCommandOutput>> {
+  let result: MethodResult<UpdateFunctionConfigurationCommandOutput> = 
+    new MethodResult<UpdateFunctionConfigurationCommandOutput>();
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    // First get current configuration to retrieve current environment variables
+    const getConfigCommand = new GetFunctionConfigurationCommand({
+      FunctionName: LambdaName,
+    });
+
+    const currentConfig = await lambda.send(getConfigCommand);
+    
+    // Get current environment variables
+    let environmentVariables = currentConfig.Environment?.Variables || {};
+    
+    // Remove the specific environment variable
+    delete environmentVariables[EnvironmentVariableName];
+
+    // Update the function configuration
+    const command = new UpdateFunctionConfigurationCommand({
+      FunctionName: LambdaName,
+      Environment: {
+        Variables: environmentVariables
+      }
+    });
+
+    const response = await lambda.send(command);
+    result.result = response;
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.RemoveLambdaEnvironmentVariable Error !!!", error);
+    ui.logToOutput("api.RemoveLambdaEnvironmentVariable Error !!!", error);
+    return result;
+  }
+}
+
 export async function GetLambdaTags(
   Region: string,
   LambdaArn: string
@@ -767,4 +824,73 @@ export async function GetLambdaTags(
     ui.logToOutput("api.GetLambdaTags Error !!!", error);
     return result;
   }
+}
+
+export async function AddLambdaTag(
+  Region: string,
+  LambdaArn: string,
+  TagKey: string,
+  TagValue: string
+): Promise<MethodResult<boolean>> {
+  let result: MethodResult<boolean> = new MethodResult<boolean>();
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    const command = new TagResourceCommand({
+      Resource: LambdaArn,
+      Tags: {
+        [TagKey]: TagValue
+      }
+    });
+
+    await lambda.send(command);
+    result.result = true;
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.AddLambdaTag Error !!!", error);
+    ui.logToOutput("api.AddLambdaTag Error !!!", error);
+    return result;
+  }
+}
+
+export async function RemoveLambdaTag(
+  Region: string,
+  LambdaArn: string,
+  TagKey: string
+): Promise<MethodResult<boolean>> {
+  let result: MethodResult<boolean> = new MethodResult<boolean>();
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    const command = new UntagResourceCommand({
+      Resource: LambdaArn,
+      TagKeys: [TagKey]
+    });
+
+    await lambda.send(command);
+    result.result = true;
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.RemoveLambdaTag Error !!!", error);
+    ui.logToOutput("api.RemoveLambdaTag Error !!!", error);
+    return result;
+  }
+}
+
+export async function UpdateLambdaTag(
+  Region: string,
+  LambdaArn: string,
+  TagKey: string,
+  TagValue: string
+): Promise<MethodResult<boolean>> {
+  // Update is same as add - AWS will overwrite existing tags
+  return await AddLambdaTag(Region, LambdaArn, TagKey, TagValue);
 }

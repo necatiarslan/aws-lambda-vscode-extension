@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetLambdaTags = exports.UpdateLambdaEnvironmentVariable = exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.TestAwsCredentials = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
+exports.UpdateLambdaTag = exports.RemoveLambdaTag = exports.AddLambdaTag = exports.GetLambdaTags = exports.RemoveLambdaEnvironmentVariable = exports.AddLambdaEnvironmentVariable = exports.UpdateLambdaEnvironmentVariable = exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.TestAwsCredentials = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const credential_providers_1 = require("@aws-sdk/credential-providers");
 const client_lambda_1 = require("@aws-sdk/client-lambda");
@@ -588,6 +588,45 @@ async function UpdateLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVa
     }
 }
 exports.UpdateLambdaEnvironmentVariable = UpdateLambdaEnvironmentVariable;
+async function AddLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName, EnvironmentVariableValue) {
+    // Same implementation as update - AWS merges the variables
+    return await UpdateLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName, EnvironmentVariableValue);
+}
+exports.AddLambdaEnvironmentVariable = AddLambdaEnvironmentVariable;
+async function RemoveLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = await GetLambdaClient(Region);
+        // First get current configuration to retrieve current environment variables
+        const getConfigCommand = new client_lambda_4.GetFunctionConfigurationCommand({
+            FunctionName: LambdaName,
+        });
+        const currentConfig = await lambda.send(getConfigCommand);
+        // Get current environment variables
+        let environmentVariables = currentConfig.Environment?.Variables || {};
+        // Remove the specific environment variable
+        delete environmentVariables[EnvironmentVariableName];
+        // Update the function configuration
+        const command = new client_lambda_6.UpdateFunctionConfigurationCommand({
+            FunctionName: LambdaName,
+            Environment: {
+                Variables: environmentVariables
+            }
+        });
+        const response = await lambda.send(command);
+        result.result = response;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage("api.RemoveLambdaEnvironmentVariable Error !!!", error);
+        ui.logToOutput("api.RemoveLambdaEnvironmentVariable Error !!!", error);
+        return result;
+    }
+}
+exports.RemoveLambdaEnvironmentVariable = RemoveLambdaEnvironmentVariable;
 async function GetLambdaTags(Region, LambdaArn) {
     let result = new MethodResult_1.MethodResult();
     result.result = {};
@@ -612,4 +651,55 @@ async function GetLambdaTags(Region, LambdaArn) {
     }
 }
 exports.GetLambdaTags = GetLambdaTags;
+async function AddLambdaTag(Region, LambdaArn, TagKey, TagValue) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = await GetLambdaClient(Region);
+        const command = new client_lambda_6.TagResourceCommand({
+            Resource: LambdaArn,
+            Tags: {
+                [TagKey]: TagValue
+            }
+        });
+        await lambda.send(command);
+        result.result = true;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage("api.AddLambdaTag Error !!!", error);
+        ui.logToOutput("api.AddLambdaTag Error !!!", error);
+        return result;
+    }
+}
+exports.AddLambdaTag = AddLambdaTag;
+async function RemoveLambdaTag(Region, LambdaArn, TagKey) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = await GetLambdaClient(Region);
+        const command = new client_lambda_6.UntagResourceCommand({
+            Resource: LambdaArn,
+            TagKeys: [TagKey]
+        });
+        await lambda.send(command);
+        result.result = true;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage("api.RemoveLambdaTag Error !!!", error);
+        ui.logToOutput("api.RemoveLambdaTag Error !!!", error);
+        return result;
+    }
+}
+exports.RemoveLambdaTag = RemoveLambdaTag;
+async function UpdateLambdaTag(Region, LambdaArn, TagKey, TagValue) {
+    // Update is same as add - AWS will overwrite existing tags
+    return await AddLambdaTag(Region, LambdaArn, TagKey, TagValue);
+}
+exports.UpdateLambdaTag = UpdateLambdaTag;
 //# sourceMappingURL=API.js.map

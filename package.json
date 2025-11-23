@@ -172,6 +172,31 @@
         "command": "LambdaTreeView.LoadInfo",
         "title": "Load Info",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "LambdaTreeView.AddEnvironmentVariable",
+        "title": "Add Environment Variable",
+        "icon": "$(add)"
+      },
+      {
+        "command": "LambdaTreeView.RemoveEnvironmentVariable",
+        "title": "Remove Environment Variable",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "LambdaTreeView.AddTag",
+        "title": "Add Tag",
+        "icon": "$(add)"
+      },
+      {
+        "command": "LambdaTreeView.UpdateTag",
+        "title": "Update Tag",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "LambdaTreeView.RemoveTag",
+        "title": "Remove Tag",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -319,13 +344,38 @@
           "group": "inline"
         },
         {
+          "command": "LambdaTreeView.AddEnvironmentVariable",
+          "when": "view == LambdaTreeView && viewItem == EnvironmentVariableGroup",
+          "group": "inline"
+        },
+        {
           "command": "LambdaTreeView.UpdateEnvironmentVariable",
+          "when": "view == LambdaTreeView && viewItem == EnvironmentVariable",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.RemoveEnvironmentVariable",
           "when": "view == LambdaTreeView && viewItem == EnvironmentVariable",
           "group": "inline"
         },
         {
           "command": "LambdaTreeView.LoadTags",
           "when": "view == LambdaTreeView && viewItem == TagsGroup",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.AddTag",
+          "when": "view == LambdaTreeView && viewItem == TagsGroup",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.UpdateTag",
+          "when": "view == LambdaTreeView && viewItem == Tag",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.RemoveTag",
+          "when": "view == LambdaTreeView && viewItem == Tag",
           "group": "inline"
         },
         {
