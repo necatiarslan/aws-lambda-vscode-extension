@@ -154,6 +154,31 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		logsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 		logsItem.Parent = treeItem;
 		treeItem.Children.push(logsItem);
+
+		// Add Environment Variables Group
+		let envVarsItem = new LambdaTreeItem("Environment Variables", TreeItemType.EnvironmentVariableGroup);
+		envVarsItem.Lambda = treeItem.Lambda;
+		envVarsItem.Region = treeItem.Region;
+		envVarsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+		envVarsItem.Parent = treeItem;
+		treeItem.Children.push(envVarsItem);
+
+		// Add Tags Group
+		let tagsItem = new LambdaTreeItem("Tags", TreeItemType.TagsGroup);
+		tagsItem.Lambda = treeItem.Lambda;
+		tagsItem.Region = treeItem.Region;
+		tagsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+		tagsItem.Parent = treeItem;
+		treeItem.Children.push(tagsItem);
+
+		// Add Info Group
+		let infoItem = new LambdaTreeItem("Info", TreeItemType.InfoGroup);
+		infoItem.Lambda = treeItem.Lambda;
+		infoItem.Region = treeItem.Region;
+		infoItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+		infoItem.Parent = treeItem;
+		treeItem.Children.push(infoItem);
+
 		return treeItem;
 	}
 
@@ -255,6 +280,21 @@ export class LambdaTreeDataProvider implements vscode.TreeDataProvider<LambdaTre
 		if(!node)
 		{
 			result.push(...this.GetLambdaNodes());
+		}
+		else if(node.TreeItemType === TreeItemType.EnvironmentVariableGroup && node.Children.length === 0)
+		{
+			// Auto-load environment variables when the node is expanded
+			LambdaTreeView.Current.LoadEnvironmentVariables(node);
+		}
+		else if(node.TreeItemType === TreeItemType.TagsGroup && node.Children.length === 0)
+		{
+			// Auto-load tags when the node is expanded
+			LambdaTreeView.Current.LoadTags(node);
+		}
+		else if(node.TreeItemType === TreeItemType.InfoGroup && node.Children.length === 0)
+		{
+			// Auto-load info when the node is expanded
+			LambdaTreeView.Current.LoadInfo(node);
 		}
 		else if(node.Children.length > 0)
 		{

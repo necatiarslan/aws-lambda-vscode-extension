@@ -17,6 +17,10 @@ export class LambdaTreeItem extends vscode.TreeItem {
 	public ResponsePayload: string | undefined;
 	public EnvironmentVariableName: string | undefined;
 	public EnvironmentVariableValue: string | undefined;
+	public TagKey: string | undefined;
+	public TagValue: string | undefined;
+	public InfoKey: string | undefined;
+	public InfoValue: string | undefined;
 	public IsRunning: boolean = false;
 
 	constructor(text:string, treeItemType:TreeItemType) {
@@ -121,6 +125,26 @@ export class LambdaTreeItem extends vscode.TreeItem {
 			this.iconPath = new vscode.ThemeIcon('wrench');
 			this.contextValue = "EnvironmentVariable"
 		}
+		else if(this.TreeItemType === TreeItemType.TagsGroup)
+		{
+			this.iconPath = new vscode.ThemeIcon('tag');
+			this.contextValue = "TagsGroup"
+		}
+		else if(this.TreeItemType === TreeItemType.Tag)
+		{
+			this.iconPath = new vscode.ThemeIcon('tag');
+			this.contextValue = "Tag"
+		}
+		else if(this.TreeItemType === TreeItemType.InfoGroup)
+		{
+			this.iconPath = new vscode.ThemeIcon('info');
+			this.contextValue = "InfoGroup"
+		}
+		else if(this.TreeItemType === TreeItemType.InfoItem)
+		{
+			this.iconPath = new vscode.ThemeIcon('symbol-property');
+			this.contextValue = "InfoItem"
+		}
 		else
 		{
 			this.iconPath = new vscode.ThemeIcon('circle-outline');
@@ -197,5 +221,9 @@ export enum TreeItemType{
 	TriggerFilePayload= 10,
 	ResponsePayload= 11,
 	EnvironmentVariableGroup= 12,
-	EnvironmentVariable= 13
+	EnvironmentVariable= 13,
+	TagsGroup= 14,
+	Tag= 15,
+	InfoGroup= 16,
+	InfoItem= 17
 }

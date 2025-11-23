@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.TestAwsCredentials = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
+exports.GetLambdaTags = exports.UpdateLambdaEnvironmentVariable = exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.TestAwsCredentials = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
 /* eslint-disable @typescript-eslint/naming-convention */
 const credential_providers_1 = require("@aws-sdk/credential-providers");
 const client_lambda_1 = require("@aws-sdk/client-lambda");
@@ -22,7 +22,7 @@ async function GetCredentials() {
             process.env.AWS_PROFILE = LambdaTreeView.LambdaTreeView.Current.AwsProfile;
         }
         // Get credentials using the default provider chain.
-        const provider = (0, credential_providers_1.fromNodeProviderChain)();
+        const provider = (0, credential_providers_1.fromNodeProviderChain)({ ignoreCache: true });
         credentials = await provider();
         if (!credentials) {
             throw new Error("Aws credentials not found !!!");
@@ -553,4 +553,63 @@ const getCredentialsFilepath = () => process.env[exports.ENV_CREDENTIALS_PATH] |
 exports.getCredentialsFilepath = getCredentialsFilepath;
 const getConfigFilepath = () => process.env[exports.ENV_CREDENTIALS_PATH] || (0, path_2.join)((0, exports.getHomeDir)(), ".aws", "config");
 exports.getConfigFilepath = getConfigFilepath;
+const client_lambda_6 = require("@aws-sdk/client-lambda");
+async function UpdateLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName, EnvironmentVariableValue) {
+    let result = new MethodResult_1.MethodResult();
+    try {
+        const lambda = await GetLambdaClient(Region);
+        // First get current configuration to retrieve current environment variables
+        const getConfigCommand = new client_lambda_4.GetFunctionConfigurationCommand({
+            FunctionName: LambdaName,
+        });
+        const currentConfig = await lambda.send(getConfigCommand);
+        // Get current environment variables or create empty object
+        let environmentVariables = currentConfig.Environment?.Variables || {};
+        // Update the specific environment variable
+        environmentVariables[EnvironmentVariableName] = EnvironmentVariableValue;
+        // Update the function configuration
+        const command = new client_lambda_6.UpdateFunctionConfigurationCommand({
+            FunctionName: LambdaName,
+            Environment: {
+                Variables: environmentVariables
+            }
+        });
+        const response = await lambda.send(command);
+        result.result = response;
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage("api.UpdateLambdaEnvironmentVariable Error !!!", error);
+        ui.logToOutput("api.UpdateLambdaEnvironmentVariable Error !!!", error);
+        return result;
+    }
+}
+exports.UpdateLambdaEnvironmentVariable = UpdateLambdaEnvironmentVariable;
+async function GetLambdaTags(Region, LambdaArn) {
+    let result = new MethodResult_1.MethodResult();
+    result.result = {};
+    try {
+        const lambda = await GetLambdaClient(Region);
+        const command = new client_lambda_6.ListTagsCommand({
+            Resource: LambdaArn,
+        });
+        const response = await lambda.send(command);
+        if (response.Tags) {
+            result.result = response.Tags;
+        }
+        result.isSuccessful = true;
+        return result;
+    }
+    catch (error) {
+        result.isSuccessful = false;
+        result.error = error;
+        ui.showErrorMessage("api.GetLambdaTags Error !!!", error);
+        ui.logToOutput("api.GetLambdaTags Error !!!", error);
+        return result;
+    }
+}
+exports.GetLambdaTags = GetLambdaTags;
 //# sourceMappingURL=API.js.map

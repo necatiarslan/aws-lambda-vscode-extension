@@ -126,6 +126,27 @@ class LambdaTreeDataProvider {
         logsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
         logsItem.Parent = treeItem;
         treeItem.Children.push(logsItem);
+        // Add Environment Variables Group
+        let envVarsItem = new LambdaTreeItem_1.LambdaTreeItem("Environment Variables", LambdaTreeItem_1.TreeItemType.EnvironmentVariableGroup);
+        envVarsItem.Lambda = treeItem.Lambda;
+        envVarsItem.Region = treeItem.Region;
+        envVarsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+        envVarsItem.Parent = treeItem;
+        treeItem.Children.push(envVarsItem);
+        // Add Tags Group
+        let tagsItem = new LambdaTreeItem_1.LambdaTreeItem("Tags", LambdaTreeItem_1.TreeItemType.TagsGroup);
+        tagsItem.Lambda = treeItem.Lambda;
+        tagsItem.Region = treeItem.Region;
+        tagsItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+        tagsItem.Parent = treeItem;
+        treeItem.Children.push(tagsItem);
+        // Add Info Group
+        let infoItem = new LambdaTreeItem_1.LambdaTreeItem("Info", LambdaTreeItem_1.TreeItemType.InfoGroup);
+        infoItem.Lambda = treeItem.Lambda;
+        infoItem.Region = treeItem.Region;
+        infoItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+        infoItem.Parent = treeItem;
+        treeItem.Children.push(infoItem);
         return treeItem;
     }
     AddPayloadPath(node, PayloadPath) {
@@ -203,6 +224,18 @@ class LambdaTreeDataProvider {
         let result = [];
         if (!node) {
             result.push(...this.GetLambdaNodes());
+        }
+        else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.EnvironmentVariableGroup && node.Children.length === 0) {
+            // Auto-load environment variables when the node is expanded
+            LambdaTreeView_1.LambdaTreeView.Current.LoadEnvironmentVariables(node);
+        }
+        else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.TagsGroup && node.Children.length === 0) {
+            // Auto-load tags when the node is expanded
+            LambdaTreeView_1.LambdaTreeView.Current.LoadTags(node);
+        }
+        else if (node.TreeItemType === LambdaTreeItem_1.TreeItemType.InfoGroup && node.Children.length === 0) {
+            // Auto-load info when the node is expanded
+            LambdaTreeView_1.LambdaTreeView.Current.LoadInfo(node);
         }
         else if (node.Children.length > 0) {
             result.push(...node.Children);

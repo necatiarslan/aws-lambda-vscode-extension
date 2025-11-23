@@ -96,6 +96,22 @@ class LambdaTreeItem extends vscode.TreeItem {
             this.iconPath = new vscode.ThemeIcon('wrench');
             this.contextValue = "EnvironmentVariable";
         }
+        else if (this.TreeItemType === TreeItemType.TagsGroup) {
+            this.iconPath = new vscode.ThemeIcon('tag');
+            this.contextValue = "TagsGroup";
+        }
+        else if (this.TreeItemType === TreeItemType.Tag) {
+            this.iconPath = new vscode.ThemeIcon('tag');
+            this.contextValue = "Tag";
+        }
+        else if (this.TreeItemType === TreeItemType.InfoGroup) {
+            this.iconPath = new vscode.ThemeIcon('info');
+            this.contextValue = "InfoGroup";
+        }
+        else if (this.TreeItemType === TreeItemType.InfoItem) {
+            this.iconPath = new vscode.ThemeIcon('symbol-property');
+            this.contextValue = "InfoItem";
+        }
         else {
             this.iconPath = new vscode.ThemeIcon('circle-outline');
             this.contextValue = "Other";
@@ -155,5 +171,9 @@ var TreeItemType;
     TreeItemType[TreeItemType["ResponsePayload"] = 11] = "ResponsePayload";
     TreeItemType[TreeItemType["EnvironmentVariableGroup"] = 12] = "EnvironmentVariableGroup";
     TreeItemType[TreeItemType["EnvironmentVariable"] = 13] = "EnvironmentVariable";
+    TreeItemType[TreeItemType["TagsGroup"] = 14] = "TagsGroup";
+    TreeItemType[TreeItemType["Tag"] = 15] = "Tag";
+    TreeItemType[TreeItemType["InfoGroup"] = 16] = "InfoGroup";
+    TreeItemType[TreeItemType["InfoItem"] = 17] = "InfoItem";
 })(TreeItemType = exports.TreeItemType || (exports.TreeItemType = {}));
 //# sourceMappingURL=LambdaTreeItem.js.map

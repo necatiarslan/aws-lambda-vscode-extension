@@ -575,4 +575,191 @@ export class LambdaTreeView {
 		ui.logToOutput(jsonString);
 		ui.ShowTextDocument(jsonString, "json");
 	}
+
+	async LoadEnvironmentVariables(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.LoadEnvironmentVariables Started');
+		if(node.TreeItemType !== TreeItemType.EnvironmentVariableGroup) { return;}
+		if(node.IsRunning) { return; }
+		
+		this.SetNodeRunning(node, true);
+		let result = await api.GetLambdaConfiguration(node.Region, node.Lambda);
+		
+		if(!result.isSuccessful) {
+			ui.logToOutput("api.GetLambdaConfiguration Error !!!", result.error);
+			ui.showErrorMessage('Get Lambda Configuration Error !!!', result.error);
+			this.SetNodeRunning(node, false);
+			return;
+		}
+
+		// Clear existing children
+		node.Children = [];
+		
+		// Add environment variables as children
+		if(result.result.Environment && result.result.Environment.Variables) {
+			const envVars = result.result.Environment.Variables;
+			for(let key in envVars) {
+				let envVarNode = new LambdaTreeItem(`${key} = ${envVars[key]}`, TreeItemType.EnvironmentVariable);
+				envVarNode.Lambda = node.Lambda;
+				envVarNode.Region = node.Region;
+				envVarNode.EnvironmentVariableName = key;
+				envVarNode.EnvironmentVariableValue = envVars[key];
+				envVarNode.Parent = node;
+				node.Children.push(envVarNode);
+			}
+		}
+
+		if(node.Children.length > 0) {
+			node.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+		} else {
+			node.collapsibleState = vscode.TreeItemCollapsibleState.None;
+		}
+
+		this.treeDataProvider.Refresh();
+		this.SetNodeRunning(node, false);
+	}
+
+	async UpdateEnvironmentVariable(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.UpdateEnvironmentVariable Started');
+		if(node.TreeItemType !== TreeItemType.EnvironmentVariable) { return;}
+		
+		let newValue = await vscode.window.showInputBox({ 
+			value: node.EnvironmentVariableValue, 
+			placeHolder: 'Enter New Value for ' + node.EnvironmentVariableName 
+		});
+
+		if(newValue === undefined) { return; }
+
+		if(!node.EnvironmentVariableName) { return; }
+
+		this.SetNodeRunning(node, true);
+		let result = await api.UpdateLambdaEnvironmentVariable(
+			node.Region, 
+			node.Lambda, 
+			node.EnvironmentVariableName, 
+			newValue
+		);
+
+		if(!result.isSuccessful) {
+			ui.logToOutput("api.UpdateLambdaEnvironmentVariable Error !!!", result.error);
+			ui.showErrorMessage('Update Environment Variable Error !!!', result.error);
+			this.SetNodeRunning(node, false);
+			return;
+		}
+
+		ui.showInfoMessage('Environment Variable Updated Successfully');
+		
+		// Refresh the parent node to show updated values
+		if(node.Parent) {
+			await this.LoadEnvironmentVariables(node.Parent);
+		}
+		
+		this.SetNodeRunning(node, false);
+	}
+
+	async LoadTags(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.LoadTags Started');
+		if(node.TreeItemType !== TreeItemType.TagsGroup) { return;}
+		if(node.IsRunning) { return; }
+		
+		this.SetNodeRunning(node, true);
+		
+		// First get the Lambda ARN
+		let lambdaResult = await api.GetLambda(node.Region, node.Lambda);
+		
+		if(!lambdaResult.isSuccessful || !lambdaResult.result.Configuration?.FunctionArn) {
+			ui.logToOutput("api.GetLambda Error !!!", lambdaResult.error);
+			ui.showErrorMessage('Get Lambda Error !!!', lambdaResult.error);
+			this.SetNodeRunning(node, false);
+			return;
+		}
+
+		const lambdaArn = lambdaResult.result.Configuration.FunctionArn;
+		
+		// Get tags
+		let result = await api.GetLambdaTags(node.Region, lambdaArn);
+		
+		if(!result.isSuccessful) {
+			ui.logToOutput("api.GetLambdaTags Error !!!", result.error);
+			ui.showErrorMessage('Get Lambda Tags Error !!!', result.error);
+			this.SetNodeRunning(node, false);
+			return;
+		}
+
+		// Clear existing children
+		node.Children = [];
+		
+		// Add tags as children
+		if(result.result) {
+			for(let key in result.result) {
+				let tagNode = new LambdaTreeItem(`${key} = ${result.result[key]}`, TreeItemType.Tag);
+				tagNode.Lambda = node.Lambda;
+				tagNode.Region = node.Region;
+				tagNode.TagKey = key;
+				tagNode.TagValue = result.result[key];
+				tagNode.Parent = node;
+				node.Children.push(tagNode);
+			}
+		}
+
+		if(node.Children.length > 0) {
+			node.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+		} else {
+			node.collapsibleState = vscode.TreeItemCollapsibleState.None;
+		}
+
+		this.treeDataProvider.Refresh();
+		this.SetNodeRunning(node, false);
+	}
+
+	async LoadInfo(node: LambdaTreeItem) {
+		ui.logToOutput('LambdaTreeView.LoadInfo Started');
+		if(node.TreeItemType !== TreeItemType.InfoGroup) { return;}
+		if(node.IsRunning) { return; }
+		
+		this.SetNodeRunning(node, true);
+		let result = await api.GetLambdaConfiguration(node.Region, node.Lambda);
+		
+		if(!result.isSuccessful) {
+			ui.logToOutput("api.GetLambdaConfiguration Error !!!", result.error);
+			ui.showErrorMessage('Get Lambda Configuration Error !!!', result.error);
+			this.SetNodeRunning(node, false);
+			return;
+		}
+
+		// Clear existing children
+		node.Children = [];
+		
+		// Add info items as children
+		const config = result.result;
+		const infoItems = [
+			{ key: 'Description', value: config.Description || 'N/A' },
+			{ key: 'Runtime', value: config.Runtime || 'N/A' },
+			{ key: 'FunctionArn', value: config.FunctionArn || 'N/A' },
+			{ key: 'MemorySize', value: config.MemorySize?.toString() || 'N/A' },
+			{ key: 'Timeout', value: config.Timeout?.toString() || 'N/A' },
+			{ key: 'State', value: config.State || 'N/A' },
+			{ key: 'LastModified', value: config.LastModified || 'N/A' },
+			{ key: 'LastUpdateStatus', value: config.LastUpdateStatus || 'N/A' },
+			{ key: 'LogFormat', value: config.LoggingConfig?.LogFormat || 'N/A' },
+			{ key: 'LogGroup', value: config.LoggingConfig?.LogGroup || 'N/A' },
+			{ key: 'Version', value: config.Version || 'N/A' }
+		];
+
+		for(let item of infoItems) {
+			let infoNode = new LambdaTreeItem(`${item.key}: ${item.value}`, TreeItemType.InfoItem);
+			infoNode.Lambda = node.Lambda;
+			infoNode.Region = node.Region;
+			infoNode.InfoKey = item.key;
+			infoNode.InfoValue = item.value;
+			infoNode.Parent = node;
+			node.Children.push(infoNode);
+		}
+
+		if(node.Children.length > 0) {
+			node.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+		}
+
+		this.treeDataProvider.Refresh();
+		this.SetNodeRunning(node, false);
+	}
 }

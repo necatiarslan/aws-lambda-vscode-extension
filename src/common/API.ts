@@ -684,3 +684,87 @@ export const getCredentialsFilepath = () =>
 
 export const getConfigFilepath = () =>
   process.env[ENV_CREDENTIALS_PATH] || join(getHomeDir(), ".aws", "config");
+
+import { 
+  UpdateFunctionConfigurationCommand, 
+  UpdateFunctionConfigurationCommandOutput,
+  ListTagsCommand,
+  ListTagsCommandOutput
+} from "@aws-sdk/client-lambda";
+
+export async function UpdateLambdaEnvironmentVariable(
+  Region: string,
+  LambdaName: string,
+  EnvironmentVariableName: string,
+  EnvironmentVariableValue: string
+): Promise<MethodResult<UpdateFunctionConfigurationCommandOutput>> {
+  let result: MethodResult<UpdateFunctionConfigurationCommandOutput> = 
+    new MethodResult<UpdateFunctionConfigurationCommandOutput>();
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    // First get current configuration to retrieve current environment variables
+    const getConfigCommand = new GetFunctionConfigurationCommand({
+      FunctionName: LambdaName,
+    });
+
+    const currentConfig = await lambda.send(getConfigCommand);
+    
+    // Get current environment variables or create empty object
+    let environmentVariables = currentConfig.Environment?.Variables || {};
+    
+    // Update the specific environment variable
+    environmentVariables[EnvironmentVariableName] = EnvironmentVariableValue;
+
+    // Update the function configuration
+    const command = new UpdateFunctionConfigurationCommand({
+      FunctionName: LambdaName,
+      Environment: {
+        Variables: environmentVariables
+      }
+    });
+
+    const response = await lambda.send(command);
+    result.result = response;
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.UpdateLambdaEnvironmentVariable Error !!!", error);
+    ui.logToOutput("api.UpdateLambdaEnvironmentVariable Error !!!", error);
+    return result;
+  }
+}
+
+export async function GetLambdaTags(
+  Region: string,
+  LambdaArn: string
+): Promise<MethodResult<{ [key: string]: string }>> {
+  let result: MethodResult<{ [key: string]: string }> = new MethodResult<{ [key: string]: string }>();
+  result.result = {};
+
+  try {
+    const lambda = await GetLambdaClient(Region);
+
+    const command = new ListTagsCommand({
+      Resource: LambdaArn,
+    });
+
+    const response = await lambda.send(command);
+    
+    if (response.Tags) {
+      result.result = response.Tags;
+    }
+
+    result.isSuccessful = true;
+    return result;
+  } catch (error: any) {
+    result.isSuccessful = false;
+    result.error = error;
+    ui.showErrorMessage("api.GetLambdaTags Error !!!", error);
+    ui.logToOutput("api.GetLambdaTags Error !!!", error);
+    return result;
+  }
+}

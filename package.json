@@ -152,6 +152,26 @@
       {
         "command": "LambdaTreeView.BugAndNewFeature",
         "title": "Bug and New Feature"
+      },
+      {
+        "command": "LambdaTreeView.LoadEnvironmentVariables",
+        "title": "Load Environment Variables",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "LambdaTreeView.UpdateEnvironmentVariable",
+        "title": "Update Environment Variable",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "LambdaTreeView.LoadTags",
+        "title": "Load Tags",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "LambdaTreeView.LoadInfo",
+        "title": "Load Info",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -291,6 +311,26 @@
         {
           "command": "LambdaTreeView.ViewResponsePayload",
           "when": "view == LambdaTreeView && viewItem == ResponsePayload",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.LoadEnvironmentVariables",
+          "when": "view == LambdaTreeView && viewItem == EnvironmentVariableGroup",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.UpdateEnvironmentVariable",
+          "when": "view == LambdaTreeView && viewItem == EnvironmentVariable",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.LoadTags",
+          "when": "view == LambdaTreeView && viewItem == TagsGroup",
+          "group": "inline"
+        },
+        {
+          "command": "LambdaTreeView.LoadInfo",
+          "when": "view == LambdaTreeView && viewItem == InfoGroup",
           "group": "inline"
         }
       ]
