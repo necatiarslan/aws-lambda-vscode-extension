@@ -584,8 +584,8 @@ class LambdaTreeView {
         else {
             node.collapsibleState = vscode.TreeItemCollapsibleState.None;
         }
-        this.treeDataProvider.Refresh();
         this.SetNodeRunning(node, false);
+        this.treeDataProvider.Refresh();
     }
     async UpdateEnvironmentVariable(node) {
         ui.logToOutput('LambdaTreeView.UpdateEnvironmentVariable Started');
@@ -663,8 +663,8 @@ class LambdaTreeView {
         else {
             node.collapsibleState = vscode.TreeItemCollapsibleState.None;
         }
-        this.treeDataProvider.Refresh();
         this.SetNodeRunning(node, false);
+        this.treeDataProvider.Refresh();
     }
     async LoadInfo(node) {
         ui.logToOutput('LambdaTreeView.LoadInfo Started');
@@ -711,8 +711,8 @@ class LambdaTreeView {
         if (node.Children.length > 0) {
             node.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
         }
-        this.treeDataProvider.Refresh();
         this.SetNodeRunning(node, false);
+        this.treeDataProvider.Refresh();
     }
     async AddEnvironmentVariable(node) {
         ui.logToOutput('LambdaTreeView.AddEnvironmentVariable Started');
@@ -740,9 +740,10 @@ class LambdaTreeView {
             return;
         }
         ui.showInfoMessage('Environment Variable Added Successfully');
+        // Reset running state before calling Load (Load method checks IsRunning and exits if true)
+        this.SetNodeRunning(node, false);
         // Refresh the node to show updated values
         await this.LoadEnvironmentVariables(node);
-        this.SetNodeRunning(node, false);
     }
     async RemoveEnvironmentVariable(node) {
         ui.logToOutput('LambdaTreeView.RemoveEnvironmentVariable Started');
@@ -806,9 +807,10 @@ class LambdaTreeView {
             return;
         }
         ui.showInfoMessage('Tag Added Successfully');
+        // Reset running state before calling Load (Load method checks IsRunning and exits if true)
+        this.SetNodeRunning(node, false);
         // Refresh the node to show updated values
         await this.LoadTags(node);
-        this.SetNodeRunning(node, false);
     }
     async UpdateTag(node) {
         ui.logToOutput('LambdaTreeView.UpdateTag Started');

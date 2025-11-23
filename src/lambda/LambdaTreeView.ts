@@ -614,8 +614,8 @@ export class LambdaTreeView {
 			node.collapsibleState = vscode.TreeItemCollapsibleState.None;
 		}
 
-		this.treeDataProvider.Refresh();
 		this.SetNodeRunning(node, false);
+		this.treeDataProvider.Refresh();
 	}
 
 	async UpdateEnvironmentVariable(node: LambdaTreeItem) {
@@ -707,8 +707,8 @@ export class LambdaTreeView {
 			node.collapsibleState = vscode.TreeItemCollapsibleState.None;
 		}
 
-		this.treeDataProvider.Refresh();
 		this.SetNodeRunning(node, false);
+		this.treeDataProvider.Refresh();
 	}
 
 	async LoadInfo(node: LambdaTreeItem) {
@@ -759,8 +759,8 @@ export class LambdaTreeView {
 			node.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
 		}
 
-		this.treeDataProvider.Refresh();
 		this.SetNodeRunning(node, false);
+		this.treeDataProvider.Refresh();
 	}
 
 	async AddEnvironmentVariable(node: LambdaTreeItem) {
@@ -796,10 +796,11 @@ export class LambdaTreeView {
 
 		ui.showInfoMessage('Environment Variable Added Successfully');
 		
+		// Reset running state before calling Load (Load method checks IsRunning and exits if true)
+		this.SetNodeRunning(node, false);
+		
 		// Refresh the node to show updated values
 		await this.LoadEnvironmentVariables(node);
-		
-		this.SetNodeRunning(node, false);
 	}
 
 	async RemoveEnvironmentVariable(node: LambdaTreeItem) {
@@ -887,10 +888,11 @@ export class LambdaTreeView {
 
 		ui.showInfoMessage('Tag Added Successfully');
 		
+		// Reset running state before calling Load (Load method checks IsRunning and exits if true)
+		this.SetNodeRunning(node, false);
+		
 		// Refresh the node to show updated values
 		await this.LoadTags(node);
-		
-		this.SetNodeRunning(node, false);
 	}
 
 	async UpdateTag(node: LambdaTreeItem) {
