@@ -266,5 +266,5 @@ exports.LambdaTreeDataProvider = LambdaTreeDataProvider;
 var ViewType;
 (function (ViewType) {
     ViewType[ViewType["Lambda"] = 1] = "Lambda";
-})(ViewType = exports.ViewType || (exports.ViewType = {}));
+})(ViewType || (exports.ViewType = ViewType = {}));
 //# sourceMappingURL=LambdaTreeDataProvider.js.map

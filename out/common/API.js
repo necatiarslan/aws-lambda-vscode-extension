@@ -1,6 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DownloadLambdaCode = exports.UpdateLambdaTag = exports.RemoveLambdaTag = exports.AddLambdaTag = exports.GetLambdaTags = exports.RemoveLambdaEnvironmentVariable = exports.AddLambdaEnvironmentVariable = exports.UpdateLambdaEnvironmentVariable = exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = exports.getIniProfileData = exports.GetAwsProfileList = exports.TestAwsConnection = exports.TestAwsCredentials = exports.ZipTextFile = exports.UpdateLambdaCode = exports.GetLambdaConfiguration = exports.GetLambda = exports.GetLogEvents = exports.GetLambdaLogs = exports.GetLatestLambdaLogStreams = exports.GetLatestLambdaLogs = exports.GetLambdaLogGroupName = exports.GetLatestLambdaLogStreamName = exports.TriggerLambda = exports.ParseJson = exports.isJsonString = exports.GetLambdaList = exports.GetCredentials = void 0;
+exports.getConfigFilepath = exports.getCredentialsFilepath = exports.getHomeDir = exports.ENV_CREDENTIALS_PATH = void 0;
+exports.GetCredentials = GetCredentials;
+exports.GetLambdaList = GetLambdaList;
+exports.isJsonString = isJsonString;
+exports.ParseJson = ParseJson;
+exports.TriggerLambda = TriggerLambda;
+exports.GetLatestLambdaLogStreamName = GetLatestLambdaLogStreamName;
+exports.GetLambdaLogGroupName = GetLambdaLogGroupName;
+exports.GetLatestLambdaLogs = GetLatestLambdaLogs;
+exports.GetLatestLambdaLogStreams = GetLatestLambdaLogStreams;
+exports.GetLambdaLogs = GetLambdaLogs;
+exports.GetLogEvents = GetLogEvents;
+exports.GetLambda = GetLambda;
+exports.GetLambdaConfiguration = GetLambdaConfiguration;
+exports.UpdateLambdaCode = UpdateLambdaCode;
+exports.ZipTextFile = ZipTextFile;
+exports.TestAwsCredentials = TestAwsCredentials;
+exports.TestAwsConnection = TestAwsConnection;
+exports.GetAwsProfileList = GetAwsProfileList;
+exports.getIniProfileData = getIniProfileData;
+exports.UpdateLambdaEnvironmentVariable = UpdateLambdaEnvironmentVariable;
+exports.AddLambdaEnvironmentVariable = AddLambdaEnvironmentVariable;
+exports.RemoveLambdaEnvironmentVariable = RemoveLambdaEnvironmentVariable;
+exports.GetLambdaTags = GetLambdaTags;
+exports.AddLambdaTag = AddLambdaTag;
+exports.RemoveLambdaTag = RemoveLambdaTag;
+exports.UpdateLambdaTag = UpdateLambdaTag;
+exports.DownloadLambdaCode = DownloadLambdaCode;
 /* eslint-disable @typescript-eslint/naming-convention */
 const credential_providers_1 = require("@aws-sdk/credential-providers");
 const client_lambda_1 = require("@aws-sdk/client-lambda");
@@ -36,7 +63,6 @@ async function GetCredentials() {
         return credentials;
     }
 }
-exports.GetCredentials = GetCredentials;
 async function GetLambdaClient(region) {
     const credentials = await GetCredentials();
     const lambdaClient = new client_lambda_1.LambdaClient({
@@ -104,7 +130,6 @@ async function GetLambdaList(region, LambdaName) {
         return result;
     }
 }
-exports.GetLambdaList = GetLambdaList;
 const client_lambda_2 = require("@aws-sdk/client-lambda");
 function isJsonString(jsonString) {
     try {
@@ -115,11 +140,9 @@ function isJsonString(jsonString) {
         return false;
     }
 }
-exports.isJsonString = isJsonString;
 function ParseJson(jsonString) {
     return JSON.parse(jsonString);
 }
-exports.ParseJson = ParseJson;
 async function TriggerLambda(Region, LambdaName, Parameters) {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -145,7 +168,6 @@ async function TriggerLambda(Region, LambdaName, Parameters) {
         return result;
     }
 }
-exports.TriggerLambda = TriggerLambda;
 const client_cloudwatch_logs_2 = require("@aws-sdk/client-cloudwatch-logs");
 async function GetLatestLambdaLogStreamName(Region, Lambda) {
     ui.logToOutput("GetLatestLambdaLogStreamName for Lambda function: " + Lambda);
@@ -190,11 +212,9 @@ async function GetLatestLambdaLogStreamName(Region, Lambda) {
         return result;
     }
 }
-exports.GetLatestLambdaLogStreamName = GetLatestLambdaLogStreamName;
 function GetLambdaLogGroupName(Lambda) {
     return `/aws/lambda/${Lambda}`;
 }
-exports.GetLambdaLogGroupName = GetLambdaLogGroupName;
 async function GetLatestLambdaLogs(Region, Lambda) {
     ui.logToOutput("Getting logs for Lambda function: " + Lambda);
     let result = new MethodResult_1.MethodResult();
@@ -229,7 +249,7 @@ async function GetLatestLambdaLogs(Region, Lambda) {
         const getLogEventsCommand = new client_cloudwatch_logs_2.GetLogEventsCommand({
             logGroupName: logGroupName,
             logStreamName: logStreamName,
-            limit: 50,
+            limit: 50, // Adjust the limit as needed
             startFromHead: true, // Start from the beginning of the log stream
         });
         const eventsResponse = await cloudwatchlogs.send(getLogEventsCommand);
@@ -256,7 +276,6 @@ async function GetLatestLambdaLogs(Region, Lambda) {
         return result;
     }
 }
-exports.GetLatestLambdaLogs = GetLatestLambdaLogs;
 async function GetLatestLambdaLogStreams(Region, Lambda) {
     ui.logToOutput("Getting log streams for Lambda function: " + Lambda);
     let result = new MethodResult_1.MethodResult();
@@ -288,7 +307,6 @@ async function GetLatestLambdaLogStreams(Region, Lambda) {
         return result;
     }
 }
-exports.GetLatestLambdaLogStreams = GetLatestLambdaLogStreams;
 async function GetLambdaLogs(Region, Lambda, LogStreamName) {
     ui.logToOutput("Getting logs for Lambda function: " + Lambda + " LogStream " + LogStreamName);
     let result = new MethodResult_1.MethodResult();
@@ -299,7 +317,7 @@ async function GetLambdaLogs(Region, Lambda, LogStreamName) {
         const getLogEventsCommand = new client_cloudwatch_logs_2.GetLogEventsCommand({
             logGroupName: logGroupName,
             logStreamName: LogStreamName,
-            limit: 50,
+            limit: 50, // Adjust the limit as needed
             startFromHead: true, // Start from the beginning of the log stream
         });
         const eventsResponse = await cloudwatchlogs.send(getLogEventsCommand);
@@ -326,7 +344,6 @@ async function GetLambdaLogs(Region, Lambda, LogStreamName) {
         return result;
     }
 }
-exports.GetLambdaLogs = GetLambdaLogs;
 async function GetLogEvents(Region, LogGroupName, LogStreamName) {
     ui.logToOutput("Getting logs from LogGroupName: " + LogGroupName + " LogStreamName: " + LogStreamName);
     let result = new MethodResult_1.MethodResult();
@@ -337,7 +354,7 @@ async function GetLogEvents(Region, LogGroupName, LogStreamName) {
         const getLogEventsCommand = new client_cloudwatch_logs_2.GetLogEventsCommand({
             logGroupName: LogGroupName,
             logStreamName: LogStreamName,
-            limit: 50,
+            limit: 50, // Adjust the limit as needed
             startFromHead: true, // Start from the beginning of the log stream
         });
         const eventsResponse = await cloudwatchlogs.send(getLogEventsCommand);
@@ -358,7 +375,6 @@ async function GetLogEvents(Region, LogGroupName, LogStreamName) {
         return result;
     }
 }
-exports.GetLogEvents = GetLogEvents;
 const client_lambda_3 = require("@aws-sdk/client-lambda");
 async function GetLambda(Region, LambdaName) {
     let result = new MethodResult_1.MethodResult();
@@ -380,7 +396,6 @@ async function GetLambda(Region, LambdaName) {
         return result;
     }
 }
-exports.GetLambda = GetLambda;
 const client_lambda_4 = require("@aws-sdk/client-lambda");
 async function GetLambdaConfiguration(Region, LambdaName) {
     let result = new MethodResult_1.MethodResult();
@@ -402,7 +417,6 @@ async function GetLambdaConfiguration(Region, LambdaName) {
         return result;
     }
 }
-exports.GetLambdaConfiguration = GetLambdaConfiguration;
 const client_lambda_5 = require("@aws-sdk/client-lambda");
 async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
     let result = new MethodResult_1.MethodResult();
@@ -433,7 +447,6 @@ async function UpdateLambdaCode(Region, LambdaName, CodeFilePath) {
         return result;
     }
 }
-exports.UpdateLambdaCode = UpdateLambdaCode;
 async function ZipTextFile(inputPath, outputZipPath) {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -468,7 +481,6 @@ async function ZipTextFile(inputPath, outputZipPath) {
         return result;
     }
 }
-exports.ZipTextFile = ZipTextFile;
 const client_sts_1 = require("@aws-sdk/client-sts");
 async function GetSTSClient(region) {
     const credentials = await GetCredentials();
@@ -493,7 +505,6 @@ async function TestAwsCredentials() {
         return result;
     }
 }
-exports.TestAwsCredentials = TestAwsCredentials;
 async function TestAwsConnection(Region = "us-east-1") {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -510,7 +521,6 @@ async function TestAwsConnection(Region = "us-east-1") {
         return result;
     }
 }
-exports.TestAwsConnection = TestAwsConnection;
 async function GetAwsProfileList() {
     ui.logToOutput("api.GetAwsProfileList Started");
     let result = new MethodResult_1.MethodResult();
@@ -528,12 +538,10 @@ async function GetAwsProfileList() {
         return result;
     }
 }
-exports.GetAwsProfileList = GetAwsProfileList;
 async function getIniProfileData(init = {}) {
     const profiles = await (0, parseKnownFiles_1.parseKnownFiles)(init);
     return profiles;
 }
-exports.getIniProfileData = getIniProfileData;
 exports.ENV_CREDENTIALS_PATH = "AWS_SHARED_CREDENTIALS_FILE";
 const getHomeDir = () => {
     const { HOME, USERPROFILE, HOMEPATH, HOMEDRIVE = `C:${path_1.sep}` } = process.env;
@@ -587,12 +595,10 @@ async function UpdateLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVa
         return result;
     }
 }
-exports.UpdateLambdaEnvironmentVariable = UpdateLambdaEnvironmentVariable;
 async function AddLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName, EnvironmentVariableValue) {
     // Same implementation as update - AWS merges the variables
     return await UpdateLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName, EnvironmentVariableValue);
 }
-exports.AddLambdaEnvironmentVariable = AddLambdaEnvironmentVariable;
 async function RemoveLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVariableName) {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -626,7 +632,6 @@ async function RemoveLambdaEnvironmentVariable(Region, LambdaName, EnvironmentVa
         return result;
     }
 }
-exports.RemoveLambdaEnvironmentVariable = RemoveLambdaEnvironmentVariable;
 async function GetLambdaTags(Region, LambdaArn) {
     let result = new MethodResult_1.MethodResult();
     result.result = {};
@@ -650,7 +655,6 @@ async function GetLambdaTags(Region, LambdaArn) {
         return result;
     }
 }
-exports.GetLambdaTags = GetLambdaTags;
 async function AddLambdaTag(Region, LambdaArn, TagKey, TagValue) {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -674,7 +678,6 @@ async function AddLambdaTag(Region, LambdaArn, TagKey, TagValue) {
         return result;
     }
 }
-exports.AddLambdaTag = AddLambdaTag;
 async function RemoveLambdaTag(Region, LambdaArn, TagKey) {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -696,12 +699,10 @@ async function RemoveLambdaTag(Region, LambdaArn, TagKey) {
         return result;
     }
 }
-exports.RemoveLambdaTag = RemoveLambdaTag;
 async function UpdateLambdaTag(Region, LambdaArn, TagKey, TagValue) {
     // Update is same as add - AWS will overwrite existing tags
     return await AddLambdaTag(Region, LambdaArn, TagKey, TagValue);
 }
-exports.UpdateLambdaTag = UpdateLambdaTag;
 async function DownloadLambdaCode(Region, LambdaName, DownloadPath) {
     let result = new MethodResult_1.MethodResult();
     try {
@@ -771,5 +772,4 @@ async function DownloadLambdaCode(Region, LambdaName, DownloadPath) {
         return result;
     }
 }
-exports.DownloadLambdaCode = DownloadLambdaCode;
 //# sourceMappingURL=API.js.map

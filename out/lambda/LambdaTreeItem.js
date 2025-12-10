@@ -175,5 +175,5 @@ var TreeItemType;
     TreeItemType[TreeItemType["Tag"] = 15] = "Tag";
     TreeItemType[TreeItemType["InfoGroup"] = 16] = "InfoGroup";
     TreeItemType[TreeItemType["InfoItem"] = 17] = "InfoItem";
-})(TreeItemType = exports.TreeItemType || (exports.TreeItemType = {}));
+})(TreeItemType || (exports.TreeItemType = TreeItemType = {}));
 //# sourceMappingURL=LambdaTreeItem.js.map

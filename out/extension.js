@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivate = exports.activate = void 0;
+exports.activate = activate;
+exports.deactivate = deactivate;
 const vscode = require("vscode");
 const ui = require("./common/UI");
 const LambdaTreeView_1 = require("./lambda/LambdaTreeView");
@@ -123,9 +124,7 @@ function activate(context) {
     });
     ui.logToOutput('Aws Lambda Extension activation completed');
 }
-exports.activate = activate;
 function deactivate() {
     ui.logToOutput('Aws Lambda is now de-active!');
 }
-exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map
